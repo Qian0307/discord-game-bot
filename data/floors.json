@@ -153,8 +153,7 @@
   },
   "20": {
     "name": "深淵核心",
-    "description": "你看見自己——站在你面前。  
-那不是倒影。那是『你應該成為的東西』。",
+    "description": "你看見自己——站在你面前。  那不是倒影。那是『你應該成為的東西』。",
     "eventChance": 0.2,
     "monsterGroup": "core",
     "eventGroup": "silence",
