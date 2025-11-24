@@ -68,13 +68,17 @@ client.on("interactionCreate", async (interaction) => {
   // ----------------------
   // Button interaction
   // ----------------------
-  if (!interaction.isButton()) return;
+  // 按鈕互動
+if (!interaction.isButton()) return;
 
-  const id = interaction.customId;
-  const player = players.get(interaction.user.id);
+const id = interaction.customId;
+const player = players.get(interaction.user.id);
 
-  // 防 timeout
-  try { await interaction.deferUpdate(); } catch (e) { }
+// ★★★ 核心修復在這裡 ★★★
+if (!interaction.deferred && !interaction.replied) {
+  try { await interaction.deferUpdate(); } catch (e) {}
+}
+
 
   // 1️⃣ 事件（放在最前面）
   if (id.startsWith("dungeon_event_")) {
@@ -109,3 +113,4 @@ client.on("interactionCreate", async (interaction) => {
 }); // <-- 這一個才是正確的結尾！
 
 client.login(process.env.TOKEN);
+
