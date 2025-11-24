@@ -3,10 +3,12 @@ import eventsData from "../data/events.json" with { type: "json" };
 import monstersData from "../data/monsters.json" with { type: "json" };
 import floors from "../data/floors.json" with { type: "json" };
 
-// ====== 進入迷宮 / 進入樓層 ======
+// ======================
+//  主要進入點
+// ======================
 export async function handleDungeonAction(interaction, players, id) {
 
-  await interaction.deferUpdate();  // ★ 防止超時
+  await interaction.deferUpdate(); // ★ 防 timeout
 
   const userId = interaction.user.id;
   const player = players.get(userId);
@@ -14,8 +16,8 @@ export async function handleDungeonAction(interaction, players, id) {
   if (!player) {
     return interaction.editReply({
       content: "你的靈魂尚未被詛咒……請輸入 `/start`。",
-      components: [],
-      embeds: []
+      embeds: [],
+      components: []
     });
   }
 
@@ -29,7 +31,9 @@ export async function handleDungeonAction(interaction, players, id) {
   }
 }
 
-// ====== 進入樓層 ======
+// ======================
+//  進入樓層
+// ======================
 async function enterFloor(interaction, player) {
 
   const floor = floors[player.currentFloor];
@@ -48,14 +52,16 @@ async function enterFloor(interaction, player) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
-// ===== 處理樓層行動 =====
+// ======================
+//  樓層行動
+// ======================
 async function processFloorAction(interaction, player, action) {
 
   const floor = floors[player.currentFloor];
 
   if (action === "use") {
     return interaction.editReply({
-      content: "打開背包中……（功能即將加入）",
+      content: "打開背包中……",
       embeds: [],
       components: []
     });
@@ -67,12 +73,14 @@ async function processFloorAction(interaction, player, action) {
 
   if (action === "forward") {
 
+    // Boss 層
     if (floor.boss) {
       return triggerBossBattle(interaction, player, floor.boss);
     }
 
     const rng = Math.random();
 
+    // 事件 or 遭遇怪物
     if (rng < floor.eventChance) {
       return triggerRandomEvent(interaction, player, floor);
     } else {
@@ -81,7 +89,9 @@ async function processFloorAction(interaction, player, action) {
   }
 }
 
-// ====== 觀察 ======
+// ======================
+//  觀察系統
+// ======================
 async function handleObservation(interaction, player, floor) {
 
   const lukBonus = player.luk * 0.03;
@@ -98,14 +108,13 @@ async function handleObservation(interaction, player, floor) {
     if (player.class === "被詛咒的孩子" && Math.random() < 0.5) {
       description += `
 
-……你還聽到了不存在的低語：
-
+……你還聽見不存在的低語：  
 **「右邊。」**`;
     }
 
   } else {
-    description = `你什麼也沒看見。  
-但你總覺得……**有什麼在看你。**`;
+    description = `你什麼也沒看到……  
+但你總覺得 **有什麼在盯你。**`;
   }
 
   const embed = new EmbedBuilder()
@@ -121,7 +130,9 @@ async function handleObservation(interaction, player, floor) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
-// ===== 隨機事件 =====
+// ======================
+//  隨機事件
+// ======================
 async function triggerRandomEvent(interaction, player, floor) {
 
   const list = eventsData[floor.eventGroup];
@@ -146,7 +157,9 @@ async function triggerRandomEvent(interaction, player, floor) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
-// ===== 遇怪 =====
+// ======================
+//  遭遇怪物
+// ======================
 async function triggerMonster(interaction, player, floor) {
 
   const pool = monstersData[floor.monsterGroup];
@@ -154,7 +167,8 @@ async function triggerMonster(interaction, player, floor) {
     pool[Math.floor(Math.random() * pool.length)]
   ));
 
-  const lvMultiplier = 1 + (player.currentFloor * 0.15);
+  // 隨樓層難度上升
+  const lvMultiplier = 1 + player.currentFloor * 0.15;
   monster.hp = Math.floor(monster.hp * lvMultiplier);
   monster.atk = Math.floor(monster.atk * lvMultiplier);
 
@@ -173,10 +187,13 @@ async function triggerMonster(interaction, player, floor) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
-// ===== Boss 戰 =====
+// ======================
+//  Boss
+// ======================
 async function triggerBossBattle(interaction, player, bossId) {
 
   const boss = JSON.parse(JSON.stringify(monstersData["boss"][bossId]));
+
   boss.hp = Math.floor(boss.hp * (1 + player.currentFloor * 0.25));
   boss.atk = Math.floor(boss.atk * (1 + player.currentFloor * 0.25));
 
@@ -194,10 +211,12 @@ async function triggerBossBattle(interaction, player, bossId) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
-// ===== 事件結果處理 =====
+// ======================
+//  事件結果處理
+// ======================
 export async function handleEventResult(interaction, players, id) {
 
-  await interaction.deferUpdate();  // ★ 最重要：防止按鈕 timeout
+  await interaction.deferUpdate(); // ★ 超級重要
 
   const userId = interaction.user.id;
   const player = players.get(userId);
@@ -219,6 +238,7 @@ export async function handleEventResult(interaction, players, id) {
 
   let resultText = option.result;
 
+  // 數值變化
   if (option.hp) player.hp += option.hp;
   if (option.mp) player.mp += option.mp;
   if (option.str) player.str += option.str;
@@ -228,7 +248,7 @@ export async function handleEventResult(interaction, players, id) {
 
   if (option.curse) {
     player.hp = Math.max(1, player.hp - option.curse);
-    resultText += `\n\n**詛咒纏上你，最大生命被侵蝕 ${option.curse} 點。**`;
+    resultText += `\n\n**詛咒侵蝕你的生命 ${option.curse} 點。**`;
   }
 
   if (player.hp <= 0) {
@@ -247,7 +267,9 @@ export async function handleEventResult(interaction, players, id) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
-// ===== 下一層 =====
+// ======================
+//  下一層
+// ======================
 export async function goToNextFloor(interaction, player) {
 
   player.currentFloor++;
@@ -257,10 +279,8 @@ export async function goToNextFloor(interaction, player) {
       embeds: [
         new EmbedBuilder()
           .setTitle("🌑《黑暗迷霧森林》終章")
-          .setDescription(
-            "你從黑霧中走出……卻不再是你自己。\n" +
-            "森林讓你活著走出去，它一定有什麼打算。"
-          )
+          .setDescription("你活著走了出來……  
+但你不再是你自己。")
           .setColor("#1e1b4b")
       ],
       components: []
@@ -270,52 +290,48 @@ export async function goToNextFloor(interaction, player) {
   return enterFloor(interaction, player);
 }
 
-// ===== 死亡處理 =====
+// ======================
+//  死亡
+// ======================
 async function handlePlayerDeath(interaction, player) {
 
-  let penaltyText = "";
+  let text = "";
 
   switch (player.difficulty) {
 
     case "Easy":
       player.currentFloor = Math.max(1, player.currentFloor - 1);
       player.hp = Math.floor(player.hp * 0.5);
-      penaltyText = "黑霧饒過你一次……但帶走了部分生命。";
+      text = "黑霧饒過你一次……但帶走了部分生命。";
       break;
 
     case "Normal":
       player.hp = Math.floor(player.hp * 0.5);
-      penaltyText = "你再次醒來……這層迷宮似乎嘲笑著你的脆弱。";
+      text = "你再次醒來……這層迷宮似乎嘲笑著你的脆弱。";
       break;
 
     case "Hard":
       player.hp = Math.floor(player.hp * 0.4);
       player.str = Math.max(1, player.str - 2);
       player.int = Math.max(1, player.int - 2);
-      penaltyText = "死亡的代價……侵蝕你的力量。";
+      text = "死亡侵蝕了你的力量。";
       break;
 
     case "Lunatic":
       player.currentFloor = 1;
       player.hp = 50;
-      penaltyText = "你被撕碎、再組合……你回到了最初。";
+      text = "你被撕碎、再重塑……  
+你回到了最初。";
       break;
   }
 
   const embed = new EmbedBuilder()
     .setTitle("💀 你死了")
-    .setDescription(
-      `${penaltyText}\n\n` +
-      `**你的靈魂再次甦醒……**\n` +
-      `你現在位於：${player.currentFloor}F`
-    )
+    .setDescription(`${text}\n\n你現在位於：${player.currentFloor}F`)
     .setColor("#450a0a");
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("dungeon_enter")
-      .setLabel("再次進入迷霧")
-      .setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId("dungeon_enter").setLabel("再次進入迷霧").setStyle(ButtonStyle.Primary)
   );
 
   return interaction.editReply({ embeds: [embed], components: [row] });
