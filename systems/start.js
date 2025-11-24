@@ -1,6 +1,12 @@
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import {
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
+} from "discord.js";
+
 import { initializeStats } from "./stats.js";
-import floors from "../data/floors.json" with { type: "json" };
+import floors from "../data/floors.json" assert { type: "json" };
 
 const text = {
   intro: `**「……醒來吧。」**
@@ -15,34 +21,58 @@ const text = {
 **「那麼……你想承受多少痛苦呢？」**`
 };
 
+
+// =======================================================================
+//                     主流程：/start 入口
+// =======================================================================
+
 export async function startGame(interaction, players, id = null) {
 
-  // ================================
-  //       /start 第一次呼叫 reply
-  // ================================
+  // ================================================================
+  // 1️⃣ 第一次 /start → 顯示職業選單
+  // ================================================================
   if (!id) {
     const embed = new EmbedBuilder()
-      .setTitle("🌑 《黑暗迷霧森林》")
+      .setTitle("🌑 《黑暗迷雾森林》")
       .setDescription(text.intro)
       .setColor("#3b0764");
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId("start_class_A").setLabel("詛咒祭司").setStyle(ButtonStyle.Danger),
-      new ButtonBuilder().setCustomId("start_class_B").setLabel("失落旅人").setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId("start_class_C").setLabel("被詛咒的孩子").setStyle(ButtonStyle.Primary)
+    const row1 = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("start_class_A")
+        .setLabel("詛咒祭司")
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId("start_class_B")
+        .setLabel("失落旅人")
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId("start_class_C")
+        .setLabel("被詛咒的孩子")
+        .setStyle(ButtonStyle.Primary),
     );
 
     const row2 = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId("start_class_D").setLabel("墮落魔法使").setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId("start_class_E").setLabel("暗月刺客").setStyle(ButtonStyle.Secondary)
+      new ButtonBuilder()
+        .setCustomId("start_class_D")
+        .setLabel("墮落魔法使")
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId("start_class_E")
+        .setLabel("暗月刺客")
+        .setStyle(ButtonStyle.Secondary)
     );
 
-    return interaction.reply({ embeds: [embed], components: [row, row2] });
+    return interaction.reply({
+      embeds: [embed],
+      components: [row1, row2]
+    });
   }
 
-  // ================================
-  //       選職業（只能 editReply）
-  // ================================
+
+  // ================================================================
+  // 2️⃣ 選職業 → 顯示難度選單
+  // ================================================================
   if (id.startsWith("start_class_")) {
 
     const classMap = {
@@ -53,10 +83,11 @@ export async function startGame(interaction, players, id = null) {
       "start_class_E": "暗月刺客",
     };
 
-    const chosenClass = classMap[id];
+    const chosen = classMap[id];
 
+    // 暫存這個玩家選的職業
     players.set(interaction.user.id, {
-      class: chosenClass,
+      class: chosen,
       pending: true
     });
 
@@ -72,24 +103,36 @@ export async function startGame(interaction, players, id = null) {
       new ButtonBuilder().setCustomId("start_diff_Lunatic").setLabel("……你真的要這樣？").setStyle(ButtonStyle.Primary)
     );
 
-    return interaction.editReply({ embeds: [embed], components: [row] });
+    return interaction.update({
+      embeds: [embed],
+      components: [row]
+    });
   }
 
-  // ================================
-  //       選難度（只能 editReply）
-  // ================================
+
+  // ================================================================
+  // 3️⃣ 選難度 → 正式建立角色 → 顯示「進入迷霧」
+  // ================================================================
   if (id.startsWith("start_diff_")) {
 
     const userId = interaction.user.id;
     const temp = players.get(userId);
+    if (!temp) {
+      return interaction.update({
+        content: "錯誤：未找到玩家資料。",
+        components: []
+      });
+    }
 
-    const diff = id.replace("start_diff_", "");
+    const difficulty = id.replace("start_diff_", "");
+
+    // 初始化屬性
     const stats = initializeStats(temp.class);
 
     players.set(userId, {
       id: userId,
       class: temp.class,
-      difficulty: diff,
+      difficulty,
       ...stats,
       inventory: [],
       currentFloor: 1
@@ -99,7 +142,7 @@ export async function startGame(interaction, players, id = null) {
       .setTitle("🌫 詛咒開始蔓延")
       .setDescription(
         `你的形體已被決定： **${temp.class}**  
-你選擇了承受： **${diff}**  
+你選擇了承受： **${difficulty}**  
 
 黑霧拖著你走入森林深處……  
 你墜入 **第 1 層：${floors["1"].name}**`
@@ -107,9 +150,15 @@ export async function startGame(interaction, players, id = null) {
       .setColor("#4c1d95");
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId("dungeon_enter").setLabel("進入迷霧").setStyle(ButtonStyle.Primary)
+      new ButtonBuilder()
+        .setCustomId("dungeon_enter")
+        .setLabel("進入迷霧")
+        .setStyle(ButtonStyle.Primary)
     );
 
-    return interaction.editReply({ embeds: [embed], components: [row] });
+    return interaction.update({
+      embeds: [embed],
+      components: [row]
+    });
   }
 }
