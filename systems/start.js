@@ -1,6 +1,6 @@
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { initializeStats } from "./stats.js";
-import floors from "../data/floors.json" assert { type: "json" };
+import floors from "../data/floors.json" with { type: "json" };
 
 // ====== 黑暗語氣文本 ======
 const text = {
