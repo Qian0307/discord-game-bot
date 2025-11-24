@@ -33,7 +33,7 @@ const commands = [
     .setDescription("啟動《黑暗迷霧森林》冒險"),
 ];
 
-// ===== 註冊 Slash Command =====
+// ===== 註冊 Slash Commands =====
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 (async () => {
@@ -66,18 +66,18 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 
-  // Button interaction
+  // 按鈕事件
   if (interaction.isButton()) {
     const id = interaction.customId;
     const player = players.get(interaction.user.id);
+
+    // ★★★ 完全比對的 ID 要放最前面（避免被 startsWith 截走）
     if (id === "dungeon_next") {
-    const player = players.get(interaction.user.id);
-    return goToNextFloor(interaction, player);
-}
+      return goToNextFloor(interaction, player);
+    }
 
-
+    // 其他 startsWith 判斷
     if (id.startsWith("start_")) return startGame(interaction, players, id);
-    if (id === "dungeon_next") return goToNextFloor(interaction, player);     // ★★ 新增這裡
     if (id.startsWith("dungeon_")) return handleDungeonAction(interaction, players, id);
     if (id.startsWith("battle_")) return handleBattleAction(interaction, players, id);
     if (id.startsWith("inv_")) return handleInventoryAction(interaction, players, id);
@@ -86,4 +86,3 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.login(process.env.TOKEN);
-
