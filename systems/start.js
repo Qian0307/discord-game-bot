@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 
 import { initializeStats } from "./stats.js";
-import floors from "../data/floors.json" assert { type: "json" };
+import floors from "../data/floors.json" with { type: "json" };
 
 const text = {
   intro: `**「……醒來吧。」**
