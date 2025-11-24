@@ -3,11 +3,18 @@ import items from "../data/items.json" with { type: "json" };
 
 // ===== 顯示背包 =====
 export async function handleInventoryAction(interaction, players, id) {
+
+  await interaction.deferUpdate(); // ★ 防止 3 秒 timeout
+
   const userId = interaction.user.id;
   const player = players.get(userId);
 
   if (!player) {
-    return interaction.reply({ content: "靈魂未被詛咒……請輸入 `/start`。", ephemeral: true });
+    return interaction.editReply({
+      content: "靈魂尚未成形……請先輸入 `/start`。",
+      embeds: [],
+      components: []
+    });
   }
 
   // 開啟背包
@@ -24,28 +31,36 @@ export async function handleInventoryAction(interaction, players, id) {
 
 
 
-// ===== 打開背包介面 =====
+// ===== 打開背包界面 =====
 async function openInventory(interaction, player) {
 
   if (!player.inventory || player.inventory.length === 0) {
-    return interaction.update({
+    return interaction.editReply({
       embeds: [
         new EmbedBuilder()
-          .setTitle("🎒 背包是空的")
-          .setDescription("黑霧輕聲嘲笑你……「什麼都沒有。」")
+          .setTitle("🎒 背包空無一物")
+          .setDescription("黑霧低語：**「什麼都沒有。」**")
           .setColor("#1e1b4b")
       ],
-      components: []
+      components: [
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("dungeon_act_forward")
+            .setLabel("返回迷霧")
+            .setStyle(ButtonStyle.Secondary)
+        )
+      ]
     });
   }
 
   const embed = new EmbedBuilder()
     .setTitle("🎒 背包")
-    .setDescription("黑暗中，你摸索著你的物品……")
+    .setDescription("黑霧之中，你摸索著你的物品……")
     .setColor("#312e81");
 
   const row = new ActionRowBuilder();
 
+  // 為每個物品建立按鈕
   player.inventory.forEach((itemId) => {
     const item = items[itemId];
     if (!item) return;
@@ -58,7 +73,7 @@ async function openInventory(interaction, player) {
     );
   });
 
-  return interaction.update({ embeds: [embed], components: [row] });
+  return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
 
@@ -69,7 +84,11 @@ async function useItem(interaction, player, itemId) {
   const item = items[itemId];
 
   if (!item) {
-    return interaction.reply({ content: "道具不存在。", ephemeral: true });
+    return interaction.editReply({
+      content: "此道具不存在。",
+      embeds: [],
+      components: []
+    });
   }
 
   let result = `你使用了 **${item.name}**。\n`;
@@ -88,22 +107,22 @@ async function useItem(interaction, player, itemId) {
   // ===== 屬性變化 =====
   if (item.str) {
     player.str += item.str;
-    result += `力量增加 **${item.str}**。\n`;
+    result += `力量提升 **${item.str}**。\n`;
   }
 
   if (item.agi) {
     player.agi += item.agi;
-    result += `敏捷增加 **${item.agi}**。\n`;
+    result += `敏捷提升 **${item.agi}**。\n`;
   }
 
   if (item.int) {
     player.int += item.int;
-    result += `智慧增加 **${item.int}**。\n`;
+    result += `智慧提升 **${item.int}**。\n`;
   }
 
   if (item.luk) {
     player.luk += item.luk;
-    result += `幸運增加 **${item.luk}**。\n`;
+    result += `幸運提升 **${item.luk}**。\n`;
   }
 
   // ===== 解詛咒 =====
@@ -113,10 +132,9 @@ async function useItem(interaction, player, itemId) {
     player.mp += 5;
   }
 
-  // ===== 裝備系統 (武器 / 防具 / 飾品) =====
+  // ===== 裝備系統 =====
   if (item.equip) {
     const eq = item.equip;
-
     result += `\n你裝備了 **${item.name}**。\n`;
 
     if (eq.hp) player.hp += eq.hp;
@@ -138,15 +156,15 @@ async function useItem(interaction, player, itemId) {
     .setDescription(result)
     .setColor("#0f172a");
 
-  return interaction.update({
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("dungeon_act_forward")
+      .setLabel("繼續前進")
+      .setStyle(ButtonStyle.Primary)
+  );
+
+  return interaction.editReply({
     embeds: [embed],
-    components: [
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("dungeon_act_forward")
-          .setLabel("繼續前進")
-          .setStyle(ButtonStyle.Primary)
-      )
-    ]
+    components: [row]
   });
 }
