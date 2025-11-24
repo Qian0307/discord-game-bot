@@ -1,0 +1,163 @@
+{
+  "1": {
+    "name": "迷霧的入口",
+    "description": "黑霧像活著般從地面湧出……你踏入了第一層。",
+    "eventChance": 0.4,
+    "monsterGroup": "weak",
+    "eventGroup": "fog",
+    "boss": null
+  },
+  "2": {
+    "name": "呢喃樹林",
+    "description": "樹木輕輕顫抖，彷彿有東西從枝葉之間盯著你。",
+    "eventChance": 0.45,
+    "monsterGroup": "weak",
+    "eventGroup": "fog",
+    "boss": null
+  },
+  "3": {
+    "name": "黑影裂縫",
+    "description": "地面裂開，黑影從縫隙中爬出……空氣異常沉重。",
+    "eventChance": 0.3,
+    "monsterGroup": "shadow",
+    "eventGroup": "curse",
+    "boss": "shadow_beast"
+  },
+  "4": {
+    "name": "濕冷洞窟",
+    "description": "水滴聲迴盪。你感覺到某種濕滑的東西擦過腳踝……",
+    "eventChance": 0.5,
+    "monsterGroup": "slime",
+    "eventGroup": "fog",
+    "boss": null
+  },
+  "5": {
+    "name": "喃語之湖",
+    "description": "湖面映照出不是你自己的臉……",
+    "eventChance": 0.55,
+    "monsterGroup": "water",
+    "eventGroup": "mirror",
+    "boss": null
+  },
+  "6": {
+    "name": "枯死之徑",
+    "description": "樹葉全部枯死，焦黑痕跡像被灼燒過。",
+    "eventChance": 0.5,
+    "monsterGroup": "dead",
+    "eventGroup": "curse",
+    "boss": null
+  },
+  "7": {
+    "name": "深淵裂口",
+    "description": "你站在深淵前……某個巨大身影在黑暗中呼吸。",
+    "eventChance": 0.35,
+    "monsterGroup": "dead",
+    "eventGroup": "curse",
+    "boss": "abyss_guardian"
+  },
+  "8": {
+    "name": "無名之森",
+    "description": "森林變形了……你不確定自己是否在原本的路上。",
+    "eventChance": 0.55,
+    "monsterGroup": "forest",
+    "eventGroup": "fog",
+    "boss": null
+  },
+  "9": {
+    "name": "詛咒地帶",
+    "description": "空氣黏稠，像在呼吸死者的氣息。",
+    "eventChance": 0.6,
+    "monsterGroup": "curse",
+    "eventGroup": "curse",
+    "boss": null
+  },
+  "10": {
+    "name": "雙月殘光",
+    "description": "兩個殘缺的月亮在天空顫抖……它們像盯著你。",
+    "eventChance": 0.45,
+    "monsterGroup": "moon",
+    "eventGroup": "fog",
+    "boss": null
+  },
+  "11": {
+    "name": "腐臭深林",
+    "description": "腐敗味道撲鼻而來……你開始懷疑自己的味覺是否也被污染。",
+    "eventChance": 0.6,
+    "monsterGroup": "rot",
+    "eventGroup": "curse",
+    "boss": null
+  },
+  "12": {
+    "name": "靜止空洞",
+    "description": "聲音全部消失了……連你的心跳聲都被吞噬。",
+    "eventChance": 0.4,
+    "monsterGroup": "void",
+    "eventGroup": "silence",
+    "boss": null
+  },
+  "13": {
+    "name": "深淵之眼",
+    "description": "地面在蠕動……某種『存在』試圖看進你的靈魂。",
+    "eventChance": 0.35,
+    "monsterGroup": "void",
+    "eventGroup": "curse",
+    "boss": "abyss_eye"
+  },
+  "14": {
+    "name": "不祥之口",
+    "description": "前方有個像是嘴巴的洞窟……你確定它剛剛動了一下。",
+    "eventChance": 0.6,
+    "monsterGroup": "flesh",
+    "eventGroup": "curse",
+    "boss": null
+  },
+  "15": {
+    "name": "失序森林",
+    "description": "樹木在跳動。空氣在扭曲。你開始懷疑自己的感官。",
+    "eventChance": 0.55,
+    "monsterGroup": "chaos",
+    "eventGroup": "fog",
+    "boss": null
+  },
+  "16": {
+    "name": "永夜之荒野",
+    "description": "這裡沒有月亮。只有飢餓的黑暗。",
+    "eventChance": 0.5,
+    "monsterGroup": "night",
+    "eventGroup": "curse",
+    "boss": null
+  },
+  "17": {
+    "name": "破碎王座",
+    "description": "王座碎裂……卻仍能聽到有人坐在上面呼吸。",
+    "eventChance": 0.45,
+    "monsterGroup": "king",
+    "eventGroup": "silence",
+    "boss": null
+  },
+  "18": {
+    "name": "靈魂之穴",
+    "description": "牆壁由扭曲的臉孔組成，全部在無聲尖叫。",
+    "eventChance": 0.5,
+    "monsterGroup": "spirit",
+    "eventGroup": "curse",
+    "boss": null
+  },
+  "19": {
+    "name": "黑月祭壇",
+    "description": "空氣中滿是血的味道……你快到了。",
+    "eventChance": 0.35,
+    "monsterGroup": "moon",
+    "eventGroup": "curse",
+    "boss": null
+  },
+  "20": {
+    "name": "深淵核心",
+    "description": "你看見自己——站在你面前。  
+那不是倒影。那是『你應該成為的東西』。",
+    "eventChance": 0.2,
+    "monsterGroup": "core",
+    "eventGroup": "silence",
+    "boss": "true_self"
+  }
+}
