@@ -80,16 +80,16 @@ if (!id.startsWith("start_")) {
   try { await interaction.deferUpdate(); } catch {}
 }
 
-
+  // Boss 戰鬥開始
+  if (id.startsWith("battle_start_")) {
+    return handleBattleAction(interaction, players, id);
+  }
+  
   // 事件（放最前）
   if (id.startsWith("dungeon_event_")) {
     return routeEvent(interaction, players, id);
   }
 
-  // Boss 戰鬥開始
-  if (id.startsWith("battle_start_")) {
-    return handleBattleAction(interaction, players, id);
-  }
 
   // 下一層
   if (id === "dungeon_next") {
@@ -120,5 +120,6 @@ if (!id.startsWith("start_")) {
 
 // ===== 登入 bot =====
 client.login(process.env.TOKEN);
+
 
 
