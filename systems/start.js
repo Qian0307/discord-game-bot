@@ -17,7 +17,9 @@ const text = {
 
 export async function startGame(interaction, players, id = null) {
 
-  // 第一次 /start
+  // ================================
+  //       /start 第一次呼叫 reply
+  // ================================
   if (!id) {
     const embed = new EmbedBuilder()
       .setTitle("🌑 《黑暗迷霧森林》")
@@ -38,12 +40,10 @@ export async function startGame(interaction, players, id = null) {
     return interaction.reply({ embeds: [embed], components: [row, row2] });
   }
 
-  // ==============================
-  //       選職業（加入 defer）
-  // ==============================
+  // ================================
+  //       選職業（只能 editReply）
+  // ================================
   if (id.startsWith("start_class_")) {
-
-    await interaction.deferUpdate();   // ★★ 防止 timeout
 
     const classMap = {
       "start_class_A": "詛咒祭司",
@@ -75,18 +75,15 @@ export async function startGame(interaction, players, id = null) {
     return interaction.editReply({ embeds: [embed], components: [row] });
   }
 
-  // ==============================
-  //       選難度（加入 defer）
-  // ==============================
+  // ================================
+  //       選難度（只能 editReply）
+  // ================================
   if (id.startsWith("start_diff_")) {
-
-    await interaction.deferUpdate();  // ★★ 防止 timeout
 
     const userId = interaction.user.id;
     const temp = players.get(userId);
 
     const diff = id.replace("start_diff_", "");
-
     const stats = initializeStats(temp.class);
 
     players.set(userId, {
