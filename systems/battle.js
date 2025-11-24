@@ -1,6 +1,6 @@
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { goToNextFloor } from "./dungeon.js";
-import { handlePlayerDeath } from "./dungeon.js";
+export { handleBattleAction };
 
 // ====== 開始戰鬥 ======
 export async function handleBattleAction(interaction, players, id) {
@@ -241,3 +241,13 @@ async function battleWin(interaction, player, monster) {
 
   return interaction.update({ embeds: [embed], components: [row] });
 }
+
+function handlePlayerDeath(interaction, players, player) {
+  players.delete(interaction.user.id);
+
+  return interaction.update({
+    content: "💀 你倒下了……黑霧將你完全吞噬。\n《冒險結束》",
+    components: []
+  });
+}
+
