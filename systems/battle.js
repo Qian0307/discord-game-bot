@@ -1,8 +1,8 @@
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { goToNextFloor } from "./dungeon.js";
-export { handleBattleAction };
 
-// ====== 開始戰鬥 ======
+
+// ===== 實際對外匯出 =====
 export async function handleBattleAction(interaction, players, id) {
   const userId = interaction.user.id;
   const player = players.get(userId);
@@ -19,22 +19,22 @@ export async function handleBattleAction(interaction, players, id) {
 
   // ===== 普攻 =====
   if (id === "battle_attack") {
-    return playerAttack(interaction, player, monster);
+    return playerAttack(interaction, players, player, monster);
   }
 
   // ===== 技能 =====
   if (id === "battle_skill") {
-    return playerSkill(interaction, player, monster);
+    return playerSkill(interaction, players, player, monster);
   }
 
   // ===== 防禦 =====
   if (id === "battle_defend") {
-    return playerDefend(interaction, player, monster);
+    return playerDefend(interaction, players, player, monster);
   }
 
   // ===== 逃跑 =====
   if (id === "battle_run") {
-    return playerRun(interaction, player, monster);
+    return playerRun(interaction, players, player, monster);
   }
 }
 
@@ -76,7 +76,7 @@ function isDodge(agi) {
 
 
 // ===== 普攻 =====
-async function playerAttack(interaction, player, monster) {
+async function playerAttack(interaction, players, player, monster) {
 
   let damage = Math.floor(player.str * (0.8 + Math.random() * 0.6));
 
@@ -94,17 +94,16 @@ async function playerAttack(interaction, player, monster) {
 
   // 敵人死亡
   if (monster.hp <= 0) {
-    return battleWin(interaction, player, monster);
+    return battleWin(interaction, players, player, monster);
   }
 
-  // 敵人反擊
-  return enemyTurn(interaction, player, monster, result);
+  return enemyTurn(interaction, players, player, monster, result);
 }
 
 
 
 // ===== 技能攻擊（INT + MP）=====
-async function playerSkill(interaction, player, monster) {
+async function playerSkill(interaction, players, player, monster) {
 
   const mpCost = 15;
 
@@ -123,25 +122,25 @@ async function playerSkill(interaction, player, monster) {
   let result = `你釋放禁咒，造成 **${damage}** 魔法傷害。`;
 
   if (monster.hp <= 0) {
-    return battleWin(interaction, player, monster);
+    return battleWin(interaction, players, player, monster);
   }
 
-  return enemyTurn(interaction, player, monster, result);
+  return enemyTurn(interaction, players, player, monster, result);
 }
 
 
 
 // ===== 防禦 =====
-async function playerDefend(interaction, player, monster) {
+async function playerDefend(interaction, players, player, monster) {
   player.defending = true;
 
-  return enemyTurn(interaction, player, monster, "你架起防禦姿態，黑霧在你周圍纏繞……");
+  return enemyTurn(interaction, players, player, monster, "你架起防禦姿態，黑霧在你周圍纏繞……");
 }
 
 
 
 // ===== 逃跑 =====
-async function playerRun(interaction, player, monster) {
+async function playerRun(interaction, players, player, monster) {
 
   const chance = 0.25 + player.agi * 0.01;
 
@@ -158,23 +157,21 @@ async function playerRun(interaction, player, monster) {
     });
   }
 
-  return enemyTurn(interaction, player, monster, "你試圖逃跑……但黑霧抓住了你。");
+  return enemyTurn(interaction, players, player, monster, "你試圖逃跑……但黑霧抓住了你。");
 }
 
 
 
 // ===== 敵人反擊 =====
-async function enemyTurn(interaction, player, monster, previousActionText) {
+async function enemyTurn(interaction, players, player, monster, previousActionText) {
 
   let enemyDamage = Math.floor(monster.atk * (0.8 + Math.random() * 0.4));
 
-  // 玩家防禦減傷
   if (player.defending) {
     enemyDamage = Math.floor(enemyDamage * 0.4);
     player.defending = false;
   }
 
-  // 玩家閃避
   if (isDodge(player.agi)) {
     enemyDamage = 0;
   }
@@ -189,10 +186,9 @@ async function enemyTurn(interaction, player, monster, previousActionText) {
 
   // 玩家死亡
   if (player.hp <= 0) {
-    return handlePlayerDeath(interaction, player);
+    return handlePlayerDeath(interaction, players, player);
   }
 
-  // 回到戰鬥選單
   return showBattleMenuAfterHit(interaction, player, monster, result);
 }
 
@@ -223,14 +219,13 @@ async function showBattleMenuAfterHit(interaction, player, monster, text) {
 
 
 // ===== 戰鬥勝利 =====
-async function battleWin(interaction, player, monster) {
+async function battleWin(interaction, players, player, monster) {
   delete player.currentMonster;
 
   const embed = new EmbedBuilder()
     .setTitle(`💀 擊敗 ${monster.name}`)
     .setDescription(
-      `黑霧被撕開……  
-你擊敗了 **${monster.name}**。\n\n` +
+      `黑霧被撕開……\n你擊敗了 **${monster.name}**。\n\n` +
       `一道看不見的力量推著你前往下一層……`
     )
     .setColor("#14532d");
@@ -242,11 +237,19 @@ async function battleWin(interaction, player, monster) {
   return interaction.update({ embeds: [embed], components: [row] });
 }
 
+
+
+// ===== 玩家死亡 =====
 function handlePlayerDeath(interaction, players, player) {
   players.delete(interaction.user.id);
 
   return interaction.update({
-    content: "💀 你倒下了……黑霧將你完全吞噬。\n《冒險結束》",
+    embeds: [
+      new EmbedBuilder()
+        .setTitle("💀 你倒下了")
+        .setDescription("黑霧將你完全吞噬……\n《冒險結束》")
+        .setColor("#000000")
+    ],
     components: []
   });
 }
