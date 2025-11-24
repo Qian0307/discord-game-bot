@@ -30,10 +30,10 @@ const client = new Client({
 const commands = [
   new SlashCommandBuilder()
     .setName("start")
-    .setDescription("啟動《黑暗迷霧森林》冒險")
+    .setDescription("啟動《黑暗迷霧森林》冒險"),
 ];
 
-// ===== 註冊 Slash Command =====
+// ===== 註冊 Slash Commands =====
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 (async () => {
@@ -42,6 +42,7 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
       Routes.applicationCommands(process.env.CLIENT_ID),
       { body: commands }
     );
+
     console.log("✔ Slash commands 已註冊");
   } catch (e) {
     console.log(e);
@@ -56,37 +57,58 @@ client.once("ready", () => {
   console.log(`🌑《黑暗迷霧森林》運行中：${client.user.tag}`);
 });
 
-// ===== 事件處理 =====
+// ===== 互動處理 =====
 client.on("interactionCreate", async (interaction) => {
 
-  // ========= Slash command =========
+  // Slash Command
   if (interaction.isChatInputCommand()) {
-    await interaction.deferReply(); // ★ 統一互動通道
     if (interaction.commandName === "start") {
       return startGame(interaction, players);
     }
   }
 
-  // ========= 按鈕 =========
- if (interaction.isButton()) {
-    const id = interaction.customId;
+  // 按鈕互動
+  if (!interaction.isButton()) return;
 
-    // 僅處理角色與難度選擇
-    if (id.startsWith("start_class_") || id.startsWith("start_diff_")) {
-        return startGame(interaction, players, id);
-    }
+  const id = interaction.customId;
+  const player = players.get(interaction.user.id);
 
-    // 下一層
-    if (id === "dungeon_next") {
-        const player = players.get(interaction.user.id);
-        return goToNextFloor(interaction, player);
-    }
+  // 安全檢查（所有按鈕互動都先 defer，避免 3 秒 timeout）
+  try {
+    await interaction.deferUpdate();
+  } catch (e) {
+    // 已經 defer 過就忽略
+  }
 
-    if (id.startsWith("dungeon_")) return handleDungeonAction(interaction, players, id);
-    if (id.startsWith("battle_")) return handleBattleAction(interaction, players, id);
-    if (id.startsWith("inv_")) return handleInventoryAction(interaction, players, id);
-    if (id.startsWith("dungeon_event_")) return routeEvent(interaction, players, id);
-}
+  // 下一層（勝利畫面按鈕）
+  if (id === "dungeon_next") {
+    return goToNextFloor(interaction, player);
+  }
+
+  // Start 階段
+  if (id.startsWith("start_")) {
+    return startGame(interaction, players, id);
+  }
+
+  // 迷宮行動
+  if (id.startsWith("dungeon_")) {
+    return handleDungeonAction(interaction, players, id);
+  }
+
+  // 事件選項
+  if (id.startsWith("dungeon_event_")) {
+    return routeEvent(interaction, players, id);
+  }
+
+  // 戰鬥
+  if (id.startsWith("battle_")) {
+    return handleBattleAction(interaction, players, id);
+  }
+
+  // 背包
+  if (id.startsWith("inv_")) {
+    return handleInventoryAction(interaction, players, id);
+  }
+});
 
 client.login(process.env.TOKEN);
-
