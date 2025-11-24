@@ -68,24 +68,25 @@ client.on("interactionCreate", async (interaction) => {
   }
 
   // ========= 按鈕 =========
-  if (interaction.isButton()) {
-    await interaction.deferUpdate(); // ★ 最核心：所有按鈕先 defer
-
+ if (interaction.isButton()) {
     const id = interaction.customId;
-    const player = players.get(interaction.user.id);
+
+    // 僅處理角色與難度選擇
+    if (id.startsWith("start_class_") || id.startsWith("start_diff_")) {
+        return startGame(interaction, players, id);
+    }
 
     // 下一層
     if (id === "dungeon_next") {
-      return goToNextFloor(interaction, player);
+        const player = players.get(interaction.user.id);
+        return goToNextFloor(interaction, player);
     }
 
-    // 其他系統
-    if (id.startsWith("start_")) return startGame(interaction, players, id);
     if (id.startsWith("dungeon_")) return handleDungeonAction(interaction, players, id);
     if (id.startsWith("battle_")) return handleBattleAction(interaction, players, id);
     if (id.startsWith("inv_")) return handleInventoryAction(interaction, players, id);
     if (id.startsWith("dungeon_event_")) return routeEvent(interaction, players, id);
-  }
-});
+}
 
 client.login(process.env.TOKEN);
+
