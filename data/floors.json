@@ -7,14 +7,16 @@
     "eventGroup": "fog",
     "boss": null
   },
+  
   "2": {
-    "name": "呢喃樹林",
-    "description": "樹木輕輕顫抖，彷彿有東西從枝葉之間盯著你。",
-    "eventChance": 0.45,
-    "monsterGroup": "weak",
-    "eventGroup": "fog",
-    "boss": null
-  },
+  "name": "呢喃樹林",
+  "description": "樹木輕輕顫抖，彷彿有東西從枝葉之間盯著你。",
+  "monsterGroup": "forest",
+  "eventGroup": "silence",
+  "eventChance": 0.45
+ },
+
+
   "3": {
     "name": "黑影裂縫",
     "description": "地面裂開，黑影從縫隙中爬出……空氣異常沉重。",
