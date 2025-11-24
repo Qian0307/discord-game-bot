@@ -23,7 +23,7 @@ const client = new Client({
   ]
 });
 
-// Slash commands
+// Slash Commands
 const commands = [
   new SlashCommandBuilder()
     .setName("start")
@@ -32,6 +32,7 @@ const commands = [
 
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
+// 註冊 Slash 指令
 (async () => {
   try {
     await rest.put(
@@ -50,6 +51,7 @@ client.once("ready", () => {
   console.log(`🌑《黑暗迷霧森林》運行中：${client.user.tag}`);
 });
 
+// ========== 互動處理 ==========
 client.on("interactionCreate", async (interaction) => {
 
   // Slash command
@@ -98,6 +100,7 @@ client.on("interactionCreate", async (interaction) => {
     return handleDungeonAction(interaction, players, id);
   }
 
-}); // ★★★★★ 你漏掉的就是這個！ ★★★★★
+}); // ★ 正確結束 interactionCreate
 
+// ====== 最後這一行必須在所有括號外 ======
 client.login(process.env.TOKEN);
