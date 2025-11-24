@@ -67,14 +67,30 @@ client.on("interactionCreate", async (interaction) => {
   }
 
   // 按鈕事件
-  if (interaction.isButton()) {
+if (interaction.isButton()) {
+  try {
     const id = interaction.customId;
     const player = players.get(interaction.user.id);
 
-    // ★★★ 完全比對的 ID 要放最前面（避免被 startsWith 截走）
     if (id === "dungeon_next") {
-      return goToNextFloor(interaction, player);
+      return await goToNextFloor(interaction, player);
     }
+
+    if (id.startsWith("start_")) return await startGame(interaction, players, id);
+    if (id.startsWith("dungeon_")) return await handleDungeonAction(interaction, players, id);
+    if (id.startsWith("battle_")) return await handleBattleAction(interaction, players, id);
+    if (id.startsWith("inv_")) return await handleInventoryAction(interaction, players, id);
+    if (id.startsWith("dungeon_event_")) return await routeEvent(interaction, players, id);
+
+  } catch (err) {
+    console.error("❌ Interaction error:", err);
+
+    return interaction.reply({
+      content: "⚠ 出現錯誤，請重新輸入 `/start`。",
+      ephemeral: true
+    });
+  }
+}
 
     // 其他 startsWith 判斷
     if (id.startsWith("start_")) return startGame(interaction, players, id);
@@ -86,3 +102,4 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.login(process.env.TOKEN);
+
