@@ -15,6 +15,7 @@ import { startGame } from "./systems/start.js";
 import { handleDungeonAction } from "./systems/dungeon.js";
 import { handleBattleAction } from "./systems/battle.js";
 import { handleInventoryAction } from "./systems/inventory.js";
+import { routeEvent } from "./systems/events.js";
 
 // ===== Discord Client =====
 const client = new Client({
@@ -73,7 +74,10 @@ client.on("interactionCreate", async (interaction) => {
     if (id.startsWith("dungeon_")) return handleDungeonAction(interaction, players, id);
     if (id.startsWith("battle_")) return handleBattleAction(interaction, players, id);
     if (id.startsWith("inv_")) return handleInventoryAction(interaction, players, id);
+    if (id.startsWith("dungeon_event_")) return routeEvent(interaction, players, id);
+
   }
-});
+}
 
 client.login(process.env.TOKEN);
+
