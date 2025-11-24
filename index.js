@@ -86,6 +86,11 @@ if (!id.startsWith("start_")) {
     return routeEvent(interaction, players, id);
   }
 
+  // Boss 戰鬥開始
+  if (id.startsWith("battle_start_")) {
+    return handleBattleAction(interaction, players, id);
+  }
+
   // 下一層
   if (id === "dungeon_next") {
     return goToNextFloor(interaction, player);
@@ -115,4 +120,5 @@ if (!id.startsWith("start_")) {
 
 // ===== 登入 bot =====
 client.login(process.env.TOKEN);
+
 
