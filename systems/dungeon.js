@@ -401,6 +401,7 @@ async function handleDeath(interaction, player) {
 
   return interaction.editReply({
     embeds: [embed],
-    components: [row]
+    components: []   // ✔ 不要 row，死亡畫面沒有按鈕
   });
 }
+
