@@ -1,53 +1,114 @@
+import {
+  Client,
+  GatewayIntentBits,
+  Routes,
+  SlashCommandBuilder
+} from "discord.js";
+
+import { REST } from "@discordjs/rest";
+import dotenv from "dotenv";
+dotenv.config();
+
+// ===== 系統模組 =====
+import { startGame } from "./systems/start.js";
+import { handleDungeonAction, goToNextFloor } from "./systems/dungeon.js";
+import { handleBattleAction } from "./systems/battle.js";
+import { handleInventoryAction } from "./systems/inventory.js";
+import { routeEvent } from "./systems/events.js";
+
+
+// ===== Discord Client 建立 =====
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ]
+});
+
+
+// ===== Slash commands =====
+const commands = [
+  new SlashCommandBuilder()
+    .setName("start")
+    .setDescription("啟動《黑暗迷霧森林》冒險")
+];
+
+const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
+
+(async () => {
+  try {
+    await rest.put(
+      Routes.applicationCommands(process.env.CLIENT_ID),
+      { body: commands }
+    );
+    console.log("✔ Slash commands 已註冊");
+  } catch (err) {
+    console.error(err);
+  }
+})();
+
+
+// ===== 玩家資料 =====
+export const players = new Map();
+
+
+// ===== Bot 啟動 =====
+client.once("ready", () => {
+  console.log(`🌑《黑暗迷霧森林》運行中：${client.user.tag}`);
+});
+
+
+// ===== 按鈕交互 =====
 client.on("interactionCreate", async (interaction) => {
 
+  // Slash command
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === "start") {
       return startGame(interaction, players);
     }
   }
 
+  // 不是按鈕就退出
   if (!interaction.isButton()) return;
 
   const id = interaction.customId;
   const player = players.get(interaction.user.id);
 
-  // ★★★ 不要對 start_* 按鈕做 deferUpdate()
-  if (
-    !id.startsWith("start_") &&
-    !interaction.deferred &&
-    !interaction.replied
-  ) {
-    try { await interaction.deferUpdate(); } catch (e) {}
-  }
+  // 統一防 timeout
+  try { await interaction.deferUpdate(); } catch {}
 
-  // 1️⃣ 事件
+  // 事件（放最前）
   if (id.startsWith("dungeon_event_")) {
     return routeEvent(interaction, players, id);
   }
 
-  // 2️⃣ 下一層
+  // 下一層
   if (id === "dungeon_next") {
     return goToNextFloor(interaction, player);
   }
 
-  // 3️⃣ Start 系統
+  // Start 選單
   if (id.startsWith("start_")) {
     return startGame(interaction, players, id);
   }
 
-  // 4️⃣ 戰鬥
+  // 戰鬥
   if (id.startsWith("battle_")) {
     return handleBattleAction(interaction, players, id);
   }
 
-  // 5️⃣ 背包
+  // 背包
   if (id.startsWith("inv_")) {
     return handleInventoryAction(interaction, players, id);
   }
 
-  // 6️⃣ 迷宮
+  // 迷宮行動（最後）
   if (id.startsWith("dungeon_")) {
     return handleDungeonAction(interaction, players, id);
   }
-
 });
+
+
+// ===== 登入 bot =====
+client.login(process.env.TOKEN);
