@@ -5,9 +5,9 @@ import {
   ButtonStyle
 } from "discord.js";
 
-import eventsData from "../data/events.json" assert { type: "json" };
-import monstersData from "../data/monsters.json" assert { type: "json" };
-import floors from "../data/floors.json" assert { type: "json" };
+import eventsData from "../data/events.json" with { type: "json" };
+import monstersData from "../data/monsters.json" with { type: "json" };
+import floors from "../data/floors.json" with { type: "json" };
 
 
 // =======================================================================
