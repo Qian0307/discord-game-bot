@@ -33,7 +33,7 @@ const commands = [
     .setDescription("啟動《黑暗迷霧森林》冒險"),
 ];
 
-// ===== 註冊 Slash Commands =====
+// ===== 註冊 Slash Command =====
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 (async () => {
@@ -66,33 +66,16 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 
-  // 按鈕事件
-if (interaction.isButton()) {
-  try {
+  // Button interaction
+  if (interaction.isButton()) {
     const id = interaction.customId;
     const player = players.get(interaction.user.id);
 
+    // ★★ 這裡放正確，不會重複
     if (id === "dungeon_next") {
-      return await goToNextFloor(interaction, player);
+      return goToNextFloor(interaction, player);
     }
 
-    if (id.startsWith("start_")) return await startGame(interaction, players, id);
-    if (id.startsWith("dungeon_")) return await handleDungeonAction(interaction, players, id);
-    if (id.startsWith("battle_")) return await handleBattleAction(interaction, players, id);
-    if (id.startsWith("inv_")) return await handleInventoryAction(interaction, players, id);
-    if (id.startsWith("dungeon_event_")) return await routeEvent(interaction, players, id);
-
-  } catch (err) {
-    console.error("❌ Interaction error:", err);
-
-    return interaction.reply({
-      content: "⚠ 出現錯誤，請重新輸入 `/start`。",
-      ephemeral: true
-    });
-  }
-}
-
-    // 其他 startsWith 判斷
     if (id.startsWith("start_")) return startGame(interaction, players, id);
     if (id.startsWith("dungeon_")) return handleDungeonAction(interaction, players, id);
     if (id.startsWith("battle_")) return handleBattleAction(interaction, players, id);
@@ -102,4 +85,3 @@ if (interaction.isButton()) {
 });
 
 client.login(process.env.TOKEN);
-
