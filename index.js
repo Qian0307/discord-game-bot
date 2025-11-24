@@ -7,7 +7,6 @@ import {
 
 import { REST } from "@discordjs/rest";
 import dotenv from "dotenv";
-
 dotenv.config();
 
 import { startGame } from "./systems/start.js";
@@ -24,6 +23,7 @@ const client = new Client({
   ]
 });
 
+// Slash commands
 const commands = [
   new SlashCommandBuilder()
     .setName("start")
@@ -52,6 +52,7 @@ client.once("ready", () => {
 
 client.on("interactionCreate", async (interaction) => {
 
+  // Slash command
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === "start") {
       return startGame(interaction, players);
@@ -63,29 +64,33 @@ client.on("interactionCreate", async (interaction) => {
   const id = interaction.customId;
   const player = players.get(interaction.user.id);
 
-  // ❌ 不要 deferUpdate()！這裡會造成雙回覆錯誤！
-  // await interaction.deferUpdate();
+  // ⭐⭐⭐ 只有 start 系列按鈕要 deferUpdate
+  if (id.startsWith("start_")) {
+    try { await interaction.deferUpdate(); } catch {}
+    return startGame(interaction, players, id);
+  }
 
+  // 下一層
   if (id === "dungeon_next") {
     return goToNextFloor(interaction, player);
   }
 
-  if (id.startsWith("start_")) {
-    return startGame(interaction, players, id);
-  }
-
+  // 迷宮行動
   if (id.startsWith("dungeon_")) {
     return handleDungeonAction(interaction, players, id);
   }
 
+  // 事件選擇
   if (id.startsWith("dungeon_event_")) {
     return routeEvent(interaction, players, id);
   }
 
+  // 戰鬥
   if (id.startsWith("battle_")) {
     return handleBattleAction(interaction, players, id);
   }
 
+  // 背包
   if (id.startsWith("inv_")) {
     return handleInventoryAction(interaction, players, id);
   }
