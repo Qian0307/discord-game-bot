@@ -253,17 +253,28 @@ async function triggerMonster(interaction, player, floor) {
 //                               Boss 戰
 // =======================================================================
 
-async function triggerBoss(interaction, player, bossId) {
+async function triggerBoss(interaction, player, bossKey) {
 
-  const boss = JSON.parse(JSON.stringify(
-    monstersData["boss"][bossId]
-  ));
+  // 🔥 正確抓 boss 資料（從 key，而不是 id）
+  const bossData = monstersData["boss"][bossKey];
 
+  if (!bossData) {
+    return interaction.update({
+      content: `⚠ 找不到 Boss: ${bossKey}`,
+      embeds: [],
+      components: []
+    });
+  }
+
+  // 深拷貝
+  const boss = JSON.parse(JSON.stringify(bossData));
+
+  // 等級倍率
   const multi = 1 + player.currentFloor * 0.25;
-
   boss.hp = Math.floor(boss.hp * multi);
   boss.atk = Math.floor(boss.atk * multi);
 
+  // 正確設定 currentMonster
   player.currentMonster = boss;
 
   const embed = new EmbedBuilder()
@@ -273,16 +284,17 @@ async function triggerBoss(interaction, player, bossId) {
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(`battle_start_${boss.id}`)
+      .setCustomId(`battle_start_boss`) // 🔥 不要用 monster.id
       .setLabel("迎戰")
       .setStyle(ButtonStyle.Danger)
   );
 
-  return interaction.editReply({
+  return interaction.update({
     embeds: [embed],
     components: [row]
   });
 }
+
 
 
 
