@@ -20,9 +20,21 @@ export async function handleBattleAction(interaction, players, id) {
   const monster = player.currentMonster;
 
   // 開戰
-  if (id.startsWith("battle_start_")) {
+  if (id === "battle_start_boss" || id.startsWith("battle_start_")) {
+
+    const monster = player.currentMonster;
+
+    if (!monster) {
+        return interaction.update({
+            content: "沒有敵人可戰鬥。",
+            embeds: [],
+            components: []
+        });
+    }
+
     return showBattleMenu(interaction, player, monster);
-  }
+}
+
 
   // 普攻
   if (id === "battle_attack") {
