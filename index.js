@@ -1,5 +1,5 @@
 // =======================
-//      index.js（修正版）
+//      index.js（最終修正版）
 // =======================
 
 import {
@@ -56,14 +56,18 @@ client.once("ready", () => {
 
 client.on("interactionCreate", async (interaction) => {
 
+  // ----------------------
   // Slash command
+  // ----------------------
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === "start") {
       return startGame(interaction, players);
     }
   }
 
-  // 按鈕互動
+  // ----------------------
+  // Button interaction
+  // ----------------------
   if (!interaction.isButton()) return;
 
   const id = interaction.customId;
@@ -72,7 +76,7 @@ client.on("interactionCreate", async (interaction) => {
   // 防 timeout
   try { await interaction.deferUpdate(); } catch (e) { }
 
-  // 1️⃣ 事件（最優先，避免撞到 dungeon_）
+  // 1️⃣ 事件（放在最前面）
   if (id.startsWith("dungeon_event_")) {
     return routeEvent(interaction, players, id);
   }
@@ -82,7 +86,7 @@ client.on("interactionCreate", async (interaction) => {
     return goToNextFloor(interaction, player);
   }
 
-  // 3️⃣ Start 選單
+  // 3️⃣ Start 選單（職業與難度）
   if (id.startsWith("start_")) {
     return startGame(interaction, players, id);
   }
@@ -97,11 +101,11 @@ client.on("interactionCreate", async (interaction) => {
     return handleInventoryAction(interaction, players, id);
   }
 
-  // 6️⃣ 迷宮行動（會撞到 dungeon_event_，所以排除）
-  if (id.startsWith("dungeon_") && !id.startsWith("dungeon_event_")) {
+  // 6️⃣ 迷宮行動（最後）
+  if (id.startsWith("dungeon_")) {
     return handleDungeonAction(interaction, players, id);
   }
 
-});
+}); // <-- 這一個才是正確的結尾！
 
 client.login(process.env.TOKEN);
