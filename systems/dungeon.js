@@ -165,7 +165,7 @@ async function handleObservation(interaction, player, floor) {
       .setStyle(ButtonStyle.Success)
   );
 
-  return interaction.update({
+  return interaction.editReply({
     embeds: [embed],
     components: [row]
   });
@@ -198,7 +198,7 @@ async function triggerEvent(interaction, player, floor) {
     );
   });
 
-  return interaction.update({
+  return interaction.editReply({
     embeds: [embed],
     components: [row]
   });
@@ -241,7 +241,7 @@ async function triggerMonster(interaction, player, floor) {
       .setStyle(ButtonStyle.Secondary)
   );
 
-  return interaction.update({
+  return interaction.editReply({
     embeds: [embed],
     components: [row]
   });
@@ -278,7 +278,7 @@ async function triggerBoss(interaction, player, bossId) {
       .setStyle(ButtonStyle.Danger)
   );
 
-  return interaction.update({
+  return interaction.editReply({
     embeds: [embed],
     components: [row]
   });
@@ -343,7 +343,7 @@ export async function handleEventResult(interaction, players, id) {
       .setStyle(ButtonStyle.Primary)
   );
 
-  return interaction.update({
+  return interaction.editReply({
     embeds: [embed],
     components: [row]
   });
@@ -387,8 +387,8 @@ async function handleDeath(interaction, player) {
     .setDescription("黑霧將你完全吞噬……冒險結束。")
     .setColor("#000");
 
-  return interaction.update({
+  return interaction.editReply({
     embeds: [embed],
-    components: []
+    components: [row]
   });
 }
