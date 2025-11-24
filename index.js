@@ -75,21 +75,21 @@ client.on("interactionCreate", async (interaction) => {
   const id = interaction.customId;
   const player = players.get(interaction.user.id);
 
-  // 防 timeout（但 start_ 系列不能 defer）  
-if (!id.startsWith("start_")) {
-  try { await interaction.deferUpdate(); } catch {}
-}
+  // ❌ 這個 deferUpdate 原本就是錯的 → 整個刪掉
+  // （因為會阻止所有 interaction.update()）
+  // try { await interaction.deferUpdate(); } catch {}
+
+  // === 以下全部保持原本的順序 ===
 
   // Boss 戰鬥開始
   if (id.startsWith("battle_start_")) {
     return handleBattleAction(interaction, players, id);
   }
-  
+
   // 事件（放最前）
   if (id.startsWith("dungeon_event_")) {
     return routeEvent(interaction, players, id);
   }
-
 
   // 下一層
   if (id === "dungeon_next") {
@@ -118,8 +118,10 @@ if (!id.startsWith("start_")) {
 });
 
 
+
 // ===== 登入 bot =====
 client.login(process.env.TOKEN);
+
 
 
 
