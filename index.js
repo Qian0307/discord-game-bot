@@ -30,7 +30,7 @@ const client = new Client({
 const commands = [
   new SlashCommandBuilder()
     .setName("start")
-    .setDescription("啟動《黑暗迷霧森林》冒險"),
+    .setDescription("啟動《黑暗迷霧森林》冒險")
 ];
 
 // ===== 註冊 Slash Command =====
@@ -59,23 +59,27 @@ client.once("ready", () => {
 // ===== 事件處理 =====
 client.on("interactionCreate", async (interaction) => {
 
-  // Slash command
+  // ========= Slash command =========
   if (interaction.isChatInputCommand()) {
+    await interaction.deferReply(); // ★ 統一互動通道
     if (interaction.commandName === "start") {
       return startGame(interaction, players);
     }
   }
 
-  // Button interaction
+  // ========= 按鈕 =========
   if (interaction.isButton()) {
+    await interaction.deferUpdate(); // ★ 最核心：所有按鈕先 defer
+
     const id = interaction.customId;
     const player = players.get(interaction.user.id);
 
-    // ★★ 這裡放正確，不會重複
+    // 下一層
     if (id === "dungeon_next") {
       return goToNextFloor(interaction, player);
     }
 
+    // 其他系統
     if (id.startsWith("start_")) return startGame(interaction, players, id);
     if (id.startsWith("dungeon_")) return handleDungeonAction(interaction, players, id);
     if (id.startsWith("battle_")) return handleBattleAction(interaction, players, id);
