@@ -60,67 +60,55 @@ client.once("ready", () => {
 
 
 // ===== 按鈕交互 =====
-client.on("interactionCreate", async (interaction) => {
+// 按鈕互動
+if (!interaction.isButton()) return;
 
-  // Slash command
-  if (interaction.isChatInputCommand()) {
-    if (interaction.commandName === "start") {
-      return startGame(interaction, players);
-    }
-  }
+const id = interaction.customId;
+const player = players.get(interaction.user.id);
 
-  // 不是按鈕就退出
-  if (!interaction.isButton()) return;
+// === 以下全部保持原本的順序 ===
 
-  const id = interaction.customId;
-  const player = players.get(interaction.user.id);
+// Boss 戰鬥開始
+if (id.startsWith("battle_start_")) {
+  return handleBattleAction(interaction, players, id);
+}
 
-  // ❌ 這個 deferUpdate 原本就是錯的 → 整個刪掉
-  // （因為會阻止所有 interaction.update()）
-  // try { await interaction.deferUpdate(); } catch {}
+// 事件（放最前）
+if (id.startsWith("dungeon_event_")) {
+  return routeEvent(interaction, players, id);
+}
 
-  // === 以下全部保持原本的順序 ===
+// 下一層
+if (id === "dungeon_next") {
+  return goToNextFloor(interaction, player);
+}
 
-  // Boss 戰鬥開始
-  if (id.startsWith("battle_start_")) {
-    return handleBattleAction(interaction, players, id);
-  }
+// Start 選單
+if (id.startsWith("start_")) {
+  return startGame(interaction, players, id);
+}
 
-  // 事件（放最前）
-  if (id.startsWith("dungeon_event_")) {
-    return routeEvent(interaction, players, id);
-  }
+// 戰鬥
+if (id.startsWith("battle_")) {
+  return handleBattleAction(interaction, players, id);
+}
 
-  // 下一層
-  if (id === "dungeon_next") {
-    return goToNextFloor(interaction, player);
-  }
+// 背包
+if (id.startsWith("inv_")) {
+  return handleInventoryAction(interaction, players, id);
+}
 
-  // Start 選單
-  if (id.startsWith("start_")) {
-    return startGame(interaction, players, id);
-  }
+// 迷宮行動（最後）
+if (id.startsWith("dungeon_")) {
+  return handleDungeonAction(interaction, players, id);
+}
 
-  // 戰鬥
-  if (id.startsWith("battle_")) {
-    return handleBattleAction(interaction, players, id);
-  }
-
-  // 背包
-  if (id.startsWith("inv_")) {
-    return handleInventoryAction(interaction, players, id);
-  }
-
-  // 迷宮行動（最後）
-  if (id.startsWith("dungeon_")) {
-    return handleDungeonAction(interaction, players, id);
-  }
-});
 
 
 
 // ===== 登入 bot =====
 client.login(process.env.TOKEN);
+
 
 
 
