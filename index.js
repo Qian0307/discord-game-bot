@@ -7,7 +7,6 @@ import {
 
 import { REST } from "@discordjs/rest";
 import dotenv from "dotenv";
-
 dotenv.config();
 
 // ===== 系統模組 =====
@@ -48,7 +47,7 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
   }
 })();
 
-// ===== 玩家資料（記憶體版本，可改成資料庫）=====
+// ===== 玩家資料 =====
 export const players = new Map();
 
 // ===== Bot Ready =====
@@ -66,19 +65,30 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 
-  // Button interaction
+  // Buttons
   if (interaction.isButton()) {
     const id = interaction.customId;
 
-    if (id.startsWith("start_")) return startGame(interaction, players, id);
-    if (id.startsWith("dungeon_")) return handleDungeonAction(interaction, players, id);
-    if (id.startsWith("battle_")) return handleBattleAction(interaction, players, id);
-    if (id.startsWith("inv_")) return handleInventoryAction(interaction, players, id);
-    if (id.startsWith("dungeon_event_")) return routeEvent(interaction, players, id);
+    // ===== START =====
+    if (id.startsWith("start_"))
+      return startGame(interaction, players, id);
 
+    // ===== EVENT（必須放在最上面）=====
+    if (id.startsWith("dungeon_event_"))
+      return routeEvent(interaction, players, id);
+
+    // ===== DUNGEON =====
+    if (id.startsWith("dungeon_"))
+      return handleDungeonAction(interaction, players, id);
+
+    // ===== BATTLE =====
+    if (id.startsWith("battle_"))
+      return handleBattleAction(interaction, players, id);
+
+    // ===== INVENTORY =====
+    if (id.startsWith("inv_"))
+      return handleInventoryAction(interaction, players, id);
   }
 });
 
 client.login(process.env.TOKEN);
-
-
