@@ -1,3 +1,7 @@
+// =======================
+//      index.js（修正版）
+// =======================
+
 import {
   Client,
   GatewayIntentBits,
@@ -9,14 +13,12 @@ import { REST } from "@discordjs/rest";
 import dotenv from "dotenv";
 dotenv.config();
 
-// ===== 系統模組 =====
 import { startGame } from "./systems/start.js";
 import { handleDungeonAction, goToNextFloor } from "./systems/dungeon.js";
 import { handleBattleAction } from "./systems/battle.js";
 import { handleInventoryAction } from "./systems/inventory.js";
 import { routeEvent } from "./systems/events.js";
 
-// ===== Discord Client =====
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -25,16 +27,15 @@ const client = new Client({
   ]
 });
 
-// ===== Slash Commands =====
+// Slash commands
 const commands = [
   new SlashCommandBuilder()
     .setName("start")
-    .setDescription("啟動《黑暗迷霧森林》冒險")
+    .setDescription("啟動《黑暗迷霧森林》冒險"),
 ];
 
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
-// ===== 註冊 Slash Command =====
 (async () => {
   try {
     await rest.put(
@@ -43,76 +44,64 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
     );
     console.log("✔ Slash commands 已註冊");
   } catch (e) {
-    console.error(e);
+    console.log(e);
   }
 })();
 
-// ===== 玩家資料 =====
 export const players = new Map();
 
-// ===== Bot Ready =====
 client.once("ready", () => {
   console.log(`🌑《黑暗迷霧森林》運行中：${client.user.tag}`);
 });
 
-
-// =======================================================================
-//                        互 動 主 路 由（最重要）
-// =======================================================================
-
 client.on("interactionCreate", async (interaction) => {
 
-  // -------------------------------
-  // Slash Command /start
-  // -------------------------------
+  // Slash command
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === "start") {
       return startGame(interaction, players);
     }
   }
 
-  // -------------------------------
-  // 按鈕互動（Button）
-  // -------------------------------
+  // 按鈕互動
   if (!interaction.isButton()) return;
 
   const id = interaction.customId;
   const player = players.get(interaction.user.id);
 
-  // ===== Start 流程 =====
+  // 防 timeout
+  try { await interaction.deferUpdate(); } catch (e) { }
+
+  // 1️⃣ 事件（最優先，避免撞到 dungeon_）
+  if (id.startsWith("dungeon_event_")) {
+    return routeEvent(interaction, players, id);
+  }
+
+  // 2️⃣ 下一層
+  if (id === "dungeon_next") {
+    return goToNextFloor(interaction, player);
+  }
+
+  // 3️⃣ Start 選單
   if (id.startsWith("start_")) {
     return startGame(interaction, players, id);
   }
 
-  // ===== 下一層 =====
-  if (id === "dungeon_next") {
-    if (!player) return;
-    return goToNextFloor(interaction, player);
-  }
-
-  // ===== 戰鬥 =====
+  // 4️⃣ 戰鬥
   if (id.startsWith("battle_")) {
-    if (!player) return;
     return handleBattleAction(interaction, players, id);
   }
 
-  // ===== 背包 =====
+  // 5️⃣ 背包
   if (id.startsWith("inv_")) {
-    if (!player) return;
     return handleInventoryAction(interaction, players, id);
   }
 
-  // ===== 隨機事件 =====
-  if (id.startsWith("dungeon_event_")) {
-    if (!player) return;
-    return routeEvent(interaction, players, id);
-  }
-
-  // ===== 迷宮行動（最後處理）=====
-  if (id.startsWith("dungeon_")) {
-    if (!player) return;
+  // 6️⃣ 迷宮行動（會撞到 dungeon_event_，所以排除）
+  if (id.startsWith("dungeon_") && !id.startsWith("dungeon_event_")) {
     return handleDungeonAction(interaction, players, id);
   }
+
 });
 
 client.login(process.env.TOKEN);
