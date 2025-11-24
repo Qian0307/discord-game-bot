@@ -279,8 +279,7 @@ export async function goToNextFloor(interaction, player) {
       embeds: [
         new EmbedBuilder()
           .setTitle("🌑《黑暗迷霧森林》終章")
-          .setDescription("你活著走了出來……  
-但你不再是你自己。")
+          .setDescription("你活著走了出來……  但你不再是你自己。")
           .setColor("#1e1b4b")
       ],
       components: []
