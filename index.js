@@ -75,8 +75,11 @@ client.on("interactionCreate", async (interaction) => {
   const id = interaction.customId;
   const player = players.get(interaction.user.id);
 
-  // 統一防 timeout
+  // 防 timeout（但 start_ 系列不能 defer）  
+if (!id.startsWith("start_")) {
   try { await interaction.deferUpdate(); } catch {}
+}
+
 
   // 事件（放最前）
   if (id.startsWith("dungeon_event_")) {
@@ -112,3 +115,4 @@ client.on("interactionCreate", async (interaction) => {
 
 // ===== 登入 bot =====
 client.login(process.env.TOKEN);
+
