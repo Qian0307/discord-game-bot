@@ -1,5 +1,5 @@
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import items from "../data/items.json" assert { type: "json" };
+import items from "../data/items.json" with { type: "json" };
 
 // ===== 顯示背包 =====
 export async function handleInventoryAction(interaction, players, id) {
