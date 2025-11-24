@@ -71,7 +71,8 @@ async function enterFloor(interaction, player) {
       .setStyle(ButtonStyle.Success)
   );
 
-  return interaction.update({
+  // ★★★ 這裡一定要用 editReply()，不能用 update() ★★★
+  return interaction.editReply({
     embeds: [embed],
     components: [row]
   });
