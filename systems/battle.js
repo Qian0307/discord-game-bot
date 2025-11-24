@@ -18,20 +18,21 @@ export async function handleBattleAction(interaction, players, id) {
 
   const monster = player.currentMonster;
 
-  // ======= 操作種類 =======
   let action = id.replace("battle_", "");
-
-  // ======= 處理行動 =======
   let battleLog = "";
 
-  // ---- 普攻 ----
+  // =========================
+  //       玩家行動
+  // =========================
+
+  // 普攻
   if (action === "attack") {
     const dmg = Math.max(1, player.str + Math.floor(Math.random() * 4));
     monster.hp -= dmg;
     battleLog = `你對 **${monster.name}** 造成 **${dmg} 點傷害**！`;
   }
 
-  // ---- 技能 ----
+  // 技能
   else if (action === "skill") {
     if (player.mp < 10) {
       battleLog = "你的 MP 不足，無法施放技能。";
@@ -43,13 +44,13 @@ export async function handleBattleAction(interaction, players, id) {
     }
   }
 
-  // ---- 防禦 ----
+  // 防禦
   else if (action === "guard") {
     player.isGuard = true;
-    battleLog = "你提高防禦，減少本回合受到的傷害。";
+    battleLog = "你提高防禦，本回合受到的傷害減少 40%。";
   }
 
-  // ---- 逃跑 ----
+  // 逃跑
   else if (action === "run") {
     if (Math.random() < 0.5) {
       return interaction.editReply({
@@ -66,7 +67,10 @@ export async function handleBattleAction(interaction, players, id) {
     }
   }
 
-  // ======= 檢查怪物是否死亡 =======
+  // =========================
+  //       怪物被擊敗？
+  // =========================
+
   if (monster.hp <= 0) {
     return interaction.editReply({
       embeds: [
@@ -86,18 +90,27 @@ export async function handleBattleAction(interaction, players, id) {
     });
   }
 
-  // ======= 怪物反擊 =======
-  let enemyDmg = player.hp -= Math.floor(monster.atk * 0.8);
+  // =========================
+  //       怪物反擊（正確版）
+  // =========================
+
+  let enemyDmg = Math.floor(monster.atk * 0.8);   // 基礎傷害
 
   if (player.isGuard) {
-    enemyDmg = Math.floor(enemyDmg / 2);
+    enemyDmg = Math.floor(enemyDmg * 0.6);  // 減傷 40%
     player.isGuard = false;
   }
 
+  enemyDmg = Math.max(1, enemyDmg); // 至少扣 1
+
   player.hp -= enemyDmg;
+
   battleLog += `\n**${monster.name}** 對你造成 **${enemyDmg} 點傷害**！`;
 
-  // ======= 玩家死亡：展示死亡畫面，不 return null =======
+  // =========================
+  //       玩家死亡？
+  // =========================
+
   if (player.hp <= 0) {
     player.hp = 0;
     return interaction.editReply({
@@ -111,7 +124,10 @@ export async function handleBattleAction(interaction, players, id) {
     });
   }
 
-  // ======= 正常更新戰鬥 UI =======
+  // =========================
+  //       回合結束 → UI 更新
+  // =========================
+
   return interaction.editReply({
     embeds: [
       new EmbedBuilder()
