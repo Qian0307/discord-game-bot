@@ -87,7 +87,7 @@ export async function handleBattleAction(interaction, players, id) {
   }
 
   // ======= 怪物反擊 =======
-  let enemyDmg = monster.atk + Math.floor(Math.random() * 4);
+  let enemyDmg = player.hp -= Math.floor(monster.atk * 0.8);
 
   if (player.isGuard) {
     enemyDmg = Math.floor(enemyDmg / 2);
