@@ -77,7 +77,8 @@ client.on("interactionCreate", async (interaction) => {
     if (id.startsWith("dungeon_event_")) return routeEvent(interaction, players, id);
 
   }
-}
+});
 
 client.login(process.env.TOKEN);
+
 
