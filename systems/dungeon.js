@@ -319,8 +319,7 @@ async function handlePlayerDeath(interaction, player) {
     case "Lunatic":
       player.currentFloor = 1;
       player.hp = 50;
-      text = "你被撕碎、再重塑……  
-你回到了最初。";
+      text = "你被撕碎、再重塑……  你回到了最初。";
       break;
   }
 
