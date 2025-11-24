@@ -193,7 +193,7 @@ async function triggerMonster(interaction, player, floor) {
     pool[Math.floor(Math.random() * pool.length)]
   ));
 
-  const lvMultiplier = 1 + player.currentFloor * 0.15;
+  const lvMultiplier = 1 + player.currentFloor * 0.12;
 
   monster.hp = Math.floor(monster.hp * lvMultiplier);
   monster.atk = Math.floor(monster.atk * lvMultiplier);
@@ -284,6 +284,7 @@ export async function handleEventResult(interaction, players, id) {
 export async function goToNextFloor(interaction, player) {
 
   player.currentFloor++;
+  player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.2));
 
   if (player.currentFloor > 20) {
     return interaction.editReply({
