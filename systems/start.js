@@ -74,7 +74,9 @@ export async function startGame(interaction, players, id = null) {
       new ButtonBuilder().setCustomId("start_diff_Lunatic").setLabel("……你真的要這樣？").setStyle(ButtonStyle.Primary)
     );
 
+    await interaction.deferUpdate();
     return interaction.editReply({ embeds: [embed], components: [row] });
+
   }
 
   // ========= 選難度 → 建立玩家 =========
