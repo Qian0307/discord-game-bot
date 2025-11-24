@@ -70,6 +70,11 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.isButton()) {
     const id = interaction.customId;
     const player = players.get(interaction.user.id);
+    if (id === "dungeon_next") {
+    const player = players.get(interaction.user.id);
+    return goToNextFloor(interaction, player);
+}
+
 
     if (id.startsWith("start_")) return startGame(interaction, players, id);
     if (id === "dungeon_next") return goToNextFloor(interaction, player);     // ★★ 新增這裡
@@ -81,3 +86,4 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.login(process.env.TOKEN);
+
