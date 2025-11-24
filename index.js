@@ -16,7 +16,6 @@ import { handleBattleAction } from "./systems/battle.js";
 import { handleInventoryAction } from "./systems/inventory.js";
 import { routeEvent } from "./systems/events.js";
 
-
 // ===== Discord Client 建立 =====
 const client = new Client({
   intents: [
@@ -25,7 +24,6 @@ const client = new Client({
     GatewayIntentBits.MessageContent
   ]
 });
-
 
 // ===== Slash commands =====
 const commands = [
@@ -48,68 +46,74 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
   }
 })();
 
-
 // ===== 玩家資料 =====
 export const players = new Map();
-
 
 // ===== Bot 啟動 =====
 client.once("ready", () => {
   console.log(`🌑《黑暗迷霧森林》運行中：${client.user.tag}`);
 });
 
+// =============================
+//         按鈕交互核心
+// =============================
+client.on("interactionCreate", async (interaction) => {
 
-// ===== 按鈕交互 =====
-// 按鈕互動
-if (!interaction.isButton()) return;
+  // Slash command
+  if (interaction.isChatInputCommand()) {
+    if (interaction.commandName === "start") {
+      return startGame(interaction, players);
+    }
+  }
 
-const id = interaction.customId;
-const player = players.get(interaction.user.id);
+  // 非按鈕
+  if (!interaction.isButton()) return;
 
-// === 以下全部保持原本的順序 ===
+  const id = interaction.customId;
+  const userId = interaction.user.id;
+  const player = players.get(userId);
 
-// Boss 戰鬥開始
-if (id.startsWith("battle_start_")) {
-  return handleBattleAction(interaction, players, id);
-}
+  // 🔥 start_ 系列 不能 defer，會壞掉
+  if (!id.startsWith("start_")) {
+    try { await interaction.deferUpdate(); } catch {}
+  }
 
-// 事件（放最前）
-if (id.startsWith("dungeon_event_")) {
-  return routeEvent(interaction, players, id);
-}
+  // 1️⃣ Boss 開始戰鬥
+  if (id.startsWith("battle_start_")) {
+    return handleBattleAction(interaction, players, id);
+  }
 
-// 下一層
-if (id === "dungeon_next") {
-  return goToNextFloor(interaction, player);
-}
+  // 2️⃣ 事件
+  if (id.startsWith("dungeon_event_")) {
+    return routeEvent(interaction, players, id);
+  }
 
-// Start 選單
-if (id.startsWith("start_")) {
-  return startGame(interaction, players, id);
-}
+  // 3️⃣ 下一層
+  if (id === "dungeon_next") {
+    return goToNextFloor(interaction, player);
+  }
 
-// 戰鬥
-if (id.startsWith("battle_")) {
-  return handleBattleAction(interaction, players, id);
-}
+  // 4️⃣ Start 選單（職業 & 難度）
+  if (id.startsWith("start_")) {
+    return startGame(interaction, players, id);
+  }
 
-// 背包
-if (id.startsWith("inv_")) {
-  return handleInventoryAction(interaction, players, id);
-}
+  // 5️⃣ 戰鬥流程
+  if (id.startsWith("battle_")) {
+    return handleBattleAction(interaction, players, id);
+  }
 
-// 迷宮行動（最後）
-if (id.startsWith("dungeon_")) {
-  return handleDungeonAction(interaction, players, id);
-}
+  // 6️⃣ 背包
+  if (id.startsWith("inv_")) {
+    return handleInventoryAction(interaction, players, id);
+  }
 
+  // 7️⃣ 迷宮行動（前進 / 觀察 / 使用道具）
+  if (id.startsWith("dungeon_")) {
+    return handleDungeonAction(interaction, players, id);
+  }
 
-
+}); // ★★★ 你之前就是缺這個括號 ★★★
 
 // ===== 登入 bot =====
 client.login(process.env.TOKEN);
-
-
-
-
-
