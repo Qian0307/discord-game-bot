@@ -113,7 +113,10 @@ client.on("interactionCreate", async (interaction) => {
     return handleDungeonAction(interaction, players, id);
   }
 
-}); // ★★★ 你之前就是缺這個括號 ★★★
+}); 
 
 // ===== 登入 bot =====
 client.login(process.env.TOKEN);
+
+client.commands = new Collection();
+const commandFiles = fs.readdirSync("./commands");
