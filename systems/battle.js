@@ -13,7 +13,7 @@ import { addXP } from "./level.js";
 
 
 // =======================================================================
-//                       主入口：所有戰鬥按鈕
+//                          主入口
 // =======================================================================
 
 export async function handleBattleAction(interaction, players, id) {
@@ -100,8 +100,7 @@ export async function handleBattleAction(interaction, players, id) {
 
 function playerAttack(player, monster) {
 
-  // 爆擊機率：luk 提升暴擊率
-  const critChance = 0.1 + player.luk * 0.01; // 10% 基礎 + Luk%
+  const critChance = 0.1 + player.luk * 0.01; // 暴擊率
   const isCrit = Math.random() < critChance;
 
   let dmg = Math.floor(player.str + Math.random() * 3);
@@ -113,8 +112,8 @@ function playerAttack(player, monster) {
   return isCrit
     ? `你施展猛烈的一擊！造成 **${dmg} 暴擊傷害**！`
     : `你攻擊了 **${monster.name}**，造成 **${dmg} 傷害**。`;
- };
 }
+
 
 
 // =======================================================================
@@ -129,7 +128,6 @@ function playerSkill(player, monster) {
 
   player.mp -= 10;
 
-  // 技能傷害加成（INT * 2）
   const dmg = Math.floor(player.int * 2 + Math.random() * 6);
 
   monster.hp -= dmg;
@@ -145,7 +143,7 @@ function playerSkill(player, monster) {
 
 function tryRun() {
   return {
-    success: Math.random() < 0.5   // 50% 逃跑成功
+    success: Math.random() < 0.5
   };
 }
 
@@ -159,7 +157,6 @@ function monsterAttack(player, monster) {
 
   let dmg = Math.floor(monster.atk * 0.8 + Math.random() * 3);
 
-  // 玩家防禦
   if (player.isGuard) {
     dmg = Math.floor(dmg * 0.6);
     player.isGuard = false;
