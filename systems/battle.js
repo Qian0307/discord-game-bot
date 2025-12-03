@@ -5,6 +5,8 @@ import {
   ButtonStyle
 } from "discord.js";
 
+import { addXP } from "./level.js";   // ⚠ 記得你要有這個檔案
+
 export async function handleBattleAction(interaction, players, id) {
   const userId = interaction.user.id;
   const player = players.get(userId);
@@ -68,90 +70,9 @@ export async function handleBattleAction(interaction, players, id) {
   }
 
   // =========================
-  //       怪物被擊敗？
+  //   怪物死亡 → 結算獎勵
   // =========================
 
-  if (monster.hp <= 0) {
-    return interaction.editReply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle(`✔ 戰勝：${monster.name}`)
-          .setDescription("你擊敗了敵人！")
-          .setColor("#4ade80")
-      ],
-      components: [
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("dungeon_next")
-            .setLabel("前往下一層")
-            .setStyle(ButtonStyle.Primary)
-        )
-      ]
-    });
-  }
-
-  // =========================
-  //       怪物反擊（正確版）
-  // =========================
-
-  let enemyDmg = Math.floor(monster.atk * 0.8);   // 基礎傷害
-
-  if (player.isGuard) {
-    enemyDmg = Math.floor(enemyDmg * 0.6);  // 減傷 40%
-    player.isGuard = false;
-  }
-
-  enemyDmg = Math.max(1, enemyDmg); // 至少扣 1
-
-  player.hp -= enemyDmg;
-
-  battleLog += `\n**${monster.name}** 對你造成 **${enemyDmg} 點傷害**！`;
-
-  // =========================
-  //       玩家死亡？
-  // =========================
-
-  if (player.hp <= 0) {
-    player.hp = 0;
-    return interaction.editReply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("💀 你死亡了")
-          .setDescription("黑霧將你吞噬……冒險結束。")
-          .setColor("#000000")
-      ],
-      components: []
-    });
-  }
-
-  // =========================
-  //       回合結束 → UI 更新
-  // =========================
-
-  return interaction.editReply({
-    embeds: [
-      new EmbedBuilder()
-        .setTitle(`⚔ 與 ${monster.name} 的戰鬥`)
-        .setDescription(
-          `${monster.intro}\n\n` +
-          `你方 HP：**${player.hp}**　MP：**${player.mp}**\n` +
-          `敵方 HP：**${monster.hp}**\n\n` +
-          battleLog
-        )
-        .setColor("#b91c1c")
-    ],
-    components: [
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId("battle_attack").setLabel("普攻").setStyle(ButtonStyle.Primary),
-        new ButtonBuilder().setCustomId("battle_skill").setLabel("技能").setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId("battle_guard").setLabel("防禦").setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId("battle_run").setLabel("逃跑").setStyle(ButtonStyle.Danger)
-      )
-    ]
-  });
-}
-
-// ======= 結算怪物死亡 =======
   if (monster.hp <= 0) {
     const xpGain = monster.level * 20;
     const coinGain = monster.level * 5;
@@ -171,15 +92,86 @@ export async function handleBattleAction(interaction, players, id) {
 
     return interaction.editReply({
       content: msg,
+      components: [
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("dungeon_next")
+            .setLabel("前往下一層")
+            .setStyle(ButtonStyle.Primary)
+        )
+      ]
+    });
+  }
+
+  // =========================
+  //       怪物反擊
+  // =========================
+
+  let enemyDmg = Math.floor(monster.atk * 0.8);
+
+  if (player.isGuard) {
+    enemyDmg = Math.floor(enemyDmg * 0.6);
+    player.isGuard = false;
+  }
+
+  enemyDmg = Math.max(1, enemyDmg);
+  player.hp -= enemyDmg;
+
+  battleLog += `\n**${monster.name}** 對你造成 **${enemyDmg} 點傷害**！`;
+
+  // =========================
+  //       玩家死亡？
+  // =========================
+
+  if (player.hp <= 0) {
+    player.hp = 0;
+
+    return interaction.editReply({
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("💀 你死亡了")
+          .setDescription("黑霧將你吞噬……冒險結束。")
+          .setColor("#000000")
+      ],
       components: []
     });
   }
 
+  // =========================
+  //       回合結束 UI
+  // =========================
 
-  // ======= 怪物還沒死 → 回傳當前戰鬥結果 =======
   return interaction.editReply({
-    content: `你攻擊了怪物，剩餘 HP: ${monster.hp}`,
-    components: []  // 或你的按鈕
+    embeds: [
+      new EmbedBuilder()
+        .setTitle(`⚔ 與 ${monster.name} 的戰鬥`)
+        .setDescription(
+          `${monster.intro}\n\n` +
+          `你方 HP：**${player.hp}**　MP：**${player.mp}**\n` +
+          `敵方 HP：**${monster.hp}**\n\n` +
+          battleLog
+        )
+        .setColor("#b91c1c")
+    ],
+    components: [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("battle_attack")
+          .setLabel("普攻")
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("battle_skill")
+          .setLabel("技能")
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId("battle_guard")
+          .setLabel("防禦")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId("battle_run")
+          .setLabel("逃跑")
+          .setStyle(ButtonStyle.Danger)
+      )
+    ]
   });
-
 }
