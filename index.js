@@ -1,3 +1,7 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
 import {
   Client,
   GatewayIntentBits,
@@ -10,14 +14,18 @@ import { REST } from "@discordjs/rest";
 import dotenv from "dotenv";
 dotenv.config();
 
-// ===== 系統模組 =====
+// ===== ESM 版 __dirname =====
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ===== 匯入系統模組 =====
 import { startGame } from "./systems/start.js";
 import { handleDungeonAction, goToNextFloor } from "./systems/dungeon.js";
 import { handleBattleAction } from "./systems/battle.js";
 import { handleInventoryAction } from "./systems/inventory.js";
 import { routeEvent } from "./systems/events.js";
 
-// ===== Discord Client 建立 =====
+// ===== Discord Client =====
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -26,12 +34,12 @@ const client = new Client({
   ]
 });
 
-// ===== Slash commands =====
+// ===== Slash Commands 註冊 =====
 const commands = [
   new SlashCommandBuilder()
     .setName("start")
     .setDescription("啟動《黑暗迷霧森林》冒險")
-];
+].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
@@ -50,13 +58,37 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 // ===== 玩家資料 =====
 export const players = new Map();
 
+// ===== 指令集合 =====
+client.commands = new Collection();
+
+// ===== 載入 /commands 資料夾（如果你要用可以保留） =====
+const commandsPath = path.join(__dirname, "commands");
+
+if (fs.existsSync(commandsPath)) {
+  const commandFiles = fs
+    .readdirSync(commandsPath)
+    .filter(file => file.endsWith(".js"));
+
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = await import(filePath);
+
+    if (command.data && command.execute) {
+      client.commands.set(command.data.name, command);
+      console.log(`📌 Loaded command: ${command.data.name}`);
+    } else {
+      console.log(`⚠ 跳過：${file} 缺 data 或 execute`);
+    }
+  }
+}
+
 // ===== Bot 啟動 =====
 client.once("ready", () => {
   console.log(`🌑《黑暗迷霧森林》運行中：${client.user.tag}`);
 });
 
 // =============================
-//         按鈕交互核心
+//         按鈕與互動核心
 // =============================
 client.on("interactionCreate", async (interaction) => {
 
@@ -65,6 +97,9 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.commandName === "start") {
       return startGame(interaction, players);
     }
+
+    const cmd = client.commands.get(interaction.commandName);
+    if (cmd) return cmd.execute(interaction, players);
   }
 
   // 非按鈕
@@ -74,12 +109,12 @@ client.on("interactionCreate", async (interaction) => {
   const userId = interaction.user.id;
   const player = players.get(userId);
 
-  // 🔥 start_ 系列 不能 defer，會壞掉
+  // 🔥 start 系列不能 defer
   if (!id.startsWith("start_")) {
     try { await interaction.deferUpdate(); } catch {}
   }
 
-  // 1️⃣ Boss 開始戰鬥
+  // 1️⃣ 戰鬥初始化
   if (id.startsWith("battle_start_")) {
     return handleBattleAction(interaction, players, id);
   }
@@ -109,16 +144,11 @@ client.on("interactionCreate", async (interaction) => {
     return handleInventoryAction(interaction, players, id);
   }
 
-  // 7️⃣ 迷宮行動（前進 / 觀察 / 使用道具）
+  // 7️⃣ 迷宮行動
   if (id.startsWith("dungeon_")) {
     return handleDungeonAction(interaction, players, id);
   }
+});
 
-}); 
-
-// ===== 登入 bot =====
+// ===== 登入 Bot =====
 client.login(process.env.TOKEN);
-
-client.commands = new Collection();
-const commandFiles = fs.readdirSync("./commands");
-
