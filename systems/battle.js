@@ -152,25 +152,34 @@ export async function handleBattleAction(interaction, players, id) {
 }
 
 // ======= 結算怪物死亡 =======
-if (monster.hp <= 0) {
-  const xpGain = monster.level * 20;
-  const coinGain = monster.level * 5;
+  if (monster.hp <= 0) {
+    const xpGain = monster.level * 20;
+    const coinGain = monster.level * 5;
 
-  const levelUps = addXP(player, xpGain);
-  player.coins += coinGain;
+    const levelUps = addXP(player, xpGain);
+    player.coins += coinGain;
 
-  let msg = `你擊敗了 **${monster.name}**！\n`;
-  msg += `獲得 **${xpGain} XP**、**${coinGain} 金幣**。\n`;
+    let msg = `你擊敗了 **${monster.name}**！\n`;
+    msg += `獲得 **${xpGain} XP**、**${coinGain} 金幣**。\n`;
 
-  if (levelUps.length > 0) {
-    msg += `\n🎉 **升級了！** → ${levelUps.map(l => `Lv.${l}`).join(", ")}`;
-    msg += `\n+1 STR、+10 HP、+1 Skill Point`;
+    if (levelUps.length > 0) {
+      msg += `\n🎉 **升級了！** → ${levelUps.map(l => `Lv.${l}`).join(", ")}`;
+      msg += `\n+1 STR、+10 HP、+1 Skill Point`;
+    }
+
+    player.currentMonster = null;
+
+    return interaction.editReply({
+      content: msg,
+      components: []
+    });
   }
 
-  player.currentMonster = null;
 
+  // ======= 怪物還沒死 → 回傳當前戰鬥結果 =======
   return interaction.editReply({
-    content: msg,
-    components: []
+    content: `你攻擊了怪物，剩餘 HP: ${monster.hp}`,
+    components: []  // 或你的按鈕
   });
+
 }
