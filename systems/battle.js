@@ -150,3 +150,27 @@ export async function handleBattleAction(interaction, players, id) {
     ]
   });
 }
+
+// ======= 結算怪物死亡 =======
+if (monster.hp <= 0) {
+  const xpGain = monster.level * 20;
+  const coinGain = monster.level * 5;
+
+  const levelUps = addXP(player, xpGain);
+  player.coins += coinGain;
+
+  let msg = `你擊敗了 **${monster.name}**！\n`;
+  msg += `獲得 **${xpGain} XP**、**${coinGain} 金幣**。\n`;
+
+  if (levelUps.length > 0) {
+    msg += `\n🎉 **升級了！** → ${levelUps.map(l => `Lv.${l}`).join(", ")}`;
+    msg += `\n+1 STR、+10 HP、+1 Skill Point`;
+  }
+
+  player.currentMonster = null;
+
+  return interaction.editReply({
+    content: msg,
+    components: []
+  });
+}
