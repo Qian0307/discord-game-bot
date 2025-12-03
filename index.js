@@ -2,7 +2,8 @@ import {
   Client,
   GatewayIntentBits,
   Routes,
-  SlashCommandBuilder
+  SlashCommandBuilder,
+  Collection
 } from "discord.js";
 
 import { REST } from "@discordjs/rest";
@@ -120,3 +121,4 @@ client.login(process.env.TOKEN);
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync("./commands");
+
