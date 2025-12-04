@@ -1,0 +1,49 @@
+{
+  "list": [
+    {
+      "id": "fireball",
+      "name": "火球術",
+      "type": "active",
+      "cost": 10,
+      "description": "投擲火球造成高額魔法傷害。"
+    },
+    {
+      "id": "heal",
+      "name": "治癒術",
+      "type": "active",
+      "cost": 12,
+      "description": "回復自身生命。"
+    },
+    {
+      "id": "curse_burst",
+      "name": "詛咒爆破",
+      "type": "active",
+      "cost": 15,
+      "description": "引爆詛咒能量造成混沌傷害。"
+    }
+  ],
+
+  "map": {
+    "fireball": {
+      "id": "fireball",
+      "name": "火球術",
+      "type": "active",
+      "cost": 10,
+      "description": "投擲火球造成高額魔法傷害。"
+    },
+    "heal": {
+      "id": "heal",
+      "name": "治癒術",
+      "type": "active",
+      "cost": 12,
+      "description": "回復自身生命。"
+    },
+    "curse_burst": {
+      "id": "curse_burst",
+      "name": "詛咒爆破",
+      "type": "active",
+      "cost": 15,
+      "description": "引爆詛咒能量造成混沌傷害。"
+    }
+  }
+}
