@@ -1,5 +1,5 @@
 // =======================================================================
-//                         地城系統 Dungeon v1.0
+//                         地城系統 Dungeon v1.0（修正版）
 // =======================================================================
 
 import {
@@ -25,13 +25,12 @@ export async function handleDungeonAction(interaction, players, id) {
   const player = players.get(userId);
 
   if (!player) {
-    return interaction.editReply({
+    return interaction.update({
       content: "你的靈魂尚未被詛咒……請輸入 `/start`。",
       components: []
     });
   }
 
-  // 初始化樓層
   if (!player.currentFloor) player.currentFloor = 1;
 
   // 進入樓層主頁
@@ -45,7 +44,7 @@ export async function handleDungeonAction(interaction, players, id) {
     return processFloorAction(interaction, player, act);
   }
 
-  // 事件結果（由 events.js 處理）
+  // 事件結果
   if (id.startsWith("dungeon_event_")) {
     return handleEventResult(interaction, player, id);
   }
@@ -80,44 +79,36 @@ async function enterFloor(interaction, player) {
       .setStyle(ButtonStyle.Success)
   );
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
 
 
-
 // =======================================================================
-//                         樓層行動的 dispatcher
+//                         樓層行動 Dispatcher
 // =======================================================================
 
 async function processFloorAction(interaction, player, action) {
 
   const floor = floors[player.currentFloor];
 
-  // ---------------- 背包 ----------------
   if (action === "use") {
     return handleInventoryAction(interaction, player);
   }
 
-  // ---------------- 觀察 ----------------
   if (action === "observe") {
     return handleObservation(interaction, player, floor);
   }
 
-  // ---------------- 前進 ----------------
   if (action === "forward") {
-
     const rng = Math.random();
 
-    // 事件觸發
     if (rng < floor.eventChance) {
       return triggerEvent(interaction, player, floor);
     }
 
-    // 遭遇怪物
     return triggerMonster(interaction, player, floor);
   }
 }
-
 
 
 // =======================================================================
@@ -159,9 +150,8 @@ async function handleObservation(interaction, player, floor) {
       .setStyle(ButtonStyle.Success)
   );
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
-
 
 
 // =======================================================================
@@ -179,7 +169,6 @@ async function triggerEvent(interaction, player, floor) {
     .setColor("#6d28d9");
 
   const row = new ActionRowBuilder();
-
   event.options.forEach(opt => {
     row.addComponents(
       new ButtonBuilder()
@@ -189,9 +178,8 @@ async function triggerEvent(interaction, player, floor) {
     );
   });
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
-
 
 
 // =======================================================================
@@ -227,13 +215,12 @@ async function triggerMonster(interaction, player, floor) {
       .setStyle(ButtonStyle.Danger)
   );
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
 
 
-
 // =======================================================================
-//                          事件結果處理系統
+//                          事件結果處理
 // =======================================================================
 
 export async function handleEventResult(interaction, player, id) {
@@ -244,7 +231,6 @@ export async function handleEventResult(interaction, player, id) {
 
   let eventData = null;
 
-  // 找出該事件中的選項
   for (const evt of list) {
     const found = evt.options.find(o => o.id === optionId);
     if (found) {
@@ -254,13 +240,12 @@ export async function handleEventResult(interaction, player, id) {
   }
 
   if (!eventData) {
-    return interaction.editReply("⚠ 無法解析事件結果。");
+    return interaction.update("⚠ 無法解析事件結果。");
   }
 
   const op = eventData.option;
   let result = op.result + "\n";
 
-  // 属性變動
   ["hp", "mp", "str", "agi", "int", "luk"].forEach(attr => {
     if (op[attr]) {
       player[attr] += op[attr];
@@ -268,13 +253,11 @@ export async function handleEventResult(interaction, player, id) {
     }
   });
 
-  // 詛咒處理
   if (op.curse) {
     player.hp = Math.max(1, player.hp - op.curse);
     result += `\n\n**詛咒侵蝕生命 ${op.curse} 點。**`;
   }
 
-  // 死亡判定
   if (player.hp <= 0) return sendDeath(interaction);
 
   const embed = new EmbedBuilder()
@@ -289,9 +272,8 @@ export async function handleEventResult(interaction, player, id) {
       .setStyle(ButtonStyle.Primary)
   );
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
-
 
 
 // =======================================================================
@@ -304,7 +286,7 @@ export async function goToNextFloor(interaction, player) {
   player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.2));
 
   if (player.currentFloor > 20) {
-    return interaction.editReply({
+    return interaction.update({
       embeds: [
         new EmbedBuilder()
           .setTitle("🌑 終章")
@@ -319,13 +301,12 @@ export async function goToNextFloor(interaction, player) {
 }
 
 
-
 // =======================================================================
 //                             死亡
 // =======================================================================
 
 async function sendDeath(interaction) {
-  return interaction.editReply({
+  return interaction.update({
     embeds: [
       new EmbedBuilder()
         .setTitle("💀 你死了")
