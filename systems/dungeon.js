@@ -1,5 +1,5 @@
 // =======================================================================
-//                         地城系統 Dungeon v1.0（最終穩定版）
+//                         地城系統 Dungeon v1.0（修正版）
 // =======================================================================
 
 import {
@@ -14,11 +14,13 @@ import eventsData from "../data/events.json" with { type: "json" };
 import { generateMonster } from "./monster.js";
 import { handleInventoryAction } from "./inventory.js";
 
+
 // =======================================================================
 //                         主入口：處理所有地城交互
 // =======================================================================
 
 export async function handleDungeonAction(interaction, players, id) {
+
   const userId = interaction.user.id;
   const player = players.get(userId);
 
@@ -38,20 +40,18 @@ export async function handleDungeonAction(interaction, players, id) {
 
   // 樓層行動
   if (id.startsWith("dungeon_act_")) {
-    return processFloorAction(interaction, player, id.replace("dungeon_act_", ""));
-  }
-
-  // 事件結果
-  if (id.startsWith("dungeon_event_")) {
-    return handleEventResult(interaction, player, id);
+    const act = id.replace("dungeon_act_", "");
+    return processFloorAction(interaction, player, act);
   }
 }
+
 
 // =======================================================================
 //                          樓層主頁 UI
 // =======================================================================
 
 async function enterFloor(interaction, player) {
+
   const floor = floors[player.currentFloor];
 
   const embed = new EmbedBuilder()
@@ -77,11 +77,14 @@ async function enterFloor(interaction, player) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
+
+
 // =======================================================================
 //                         樓層行動 Dispatcher
 // =======================================================================
 
 async function processFloorAction(interaction, player, action) {
+
   const floor = floors[player.currentFloor];
 
   if (action === "use") {
@@ -103,11 +106,14 @@ async function processFloorAction(interaction, player, action) {
   }
 }
 
+
+
 // =======================================================================
 //                        觀察（偵查）系統
 // =======================================================================
 
 async function handleObservation(interaction, player, floor) {
+
   const chance = 0.15 + player.luk * 0.03 + player.agi * 0.02;
 
   let text = "";
@@ -120,6 +126,7 @@ async function handleObservation(interaction, player, floor) {
     if (player.class === "被詛咒的孩子" && Math.random() < 0.5) {
       text += "\n\n一個不存在的聲音在你耳邊低語：**「右邊。」**";
     }
+
   } else {
     text = "你什麼也沒看到，但背後一陣發冷。";
   }
@@ -143,11 +150,14 @@ async function handleObservation(interaction, player, floor) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
+
+
 // =======================================================================
 //                         隨機事件 trigger
 // =======================================================================
 
 async function triggerEvent(interaction, player, floor) {
+
   const list = eventsData[floor.eventGroup];
   const event = list[Math.floor(Math.random() * list.length)];
 
@@ -157,7 +167,6 @@ async function triggerEvent(interaction, player, floor) {
     .setColor("#6d28d9");
 
   const row = new ActionRowBuilder();
-
   event.options.forEach(opt => {
     row.addComponents(
       new ButtonBuilder()
@@ -170,11 +179,14 @@ async function triggerEvent(interaction, player, floor) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
+
+
 // =======================================================================
-//                        遭遇怪物（自動 scaling）
+//                        遭遇怪物
 // =======================================================================
 
 async function triggerMonster(interaction, player, floor) {
+
   const monster = generateMonster(player.currentFloor);
   player.currentMonster = monster;
 
@@ -205,11 +217,14 @@ async function triggerMonster(interaction, player, floor) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
+
+
 // =======================================================================
 //                          事件結果處理
 // =======================================================================
 
 export async function handleEventResult(interaction, player, id) {
+
   const optionId = id.replace("dungeon_event_", "");
   const floor = floors[player.currentFloor];
   const list = eventsData[floor.eventGroup];
@@ -231,7 +246,6 @@ export async function handleEventResult(interaction, player, id) {
   const op = eventData.option;
   let result = op.result + "\n";
 
-  // 屬性調整
   ["hp", "mp", "str", "agi", "int", "luk"].forEach(attr => {
     if (op[attr]) {
       player[attr] += op[attr];
@@ -261,28 +275,7 @@ export async function handleEventResult(interaction, player, id) {
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
-// =======================================================================
-//                             下一層（★ 正式生效版）
-// =======================================================================
 
-export async function goToNextFloor(interaction, player) {
-  player.currentFloor++;
-  player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.2));
-
-  if (player.currentFloor > 20) {
-    return interaction.editReply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("🌑 終章")
-          .setDescription("你成功走出森林……但你已經不再是從前的你。")
-          .setColor("#1e1b4b")
-      ],
-      components: []
-    });
-  }
-
-  return enterFloor(interaction, player);
-}
 
 // =======================================================================
 //                             死亡
