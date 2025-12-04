@@ -1,41 +1,32 @@
-// systems/monster.js
+// =======================================================================
+//                           怪物生成系統 v1.0
+// =======================================================================
 
-// 基礎怪物模板（會隨樓層 scaling）
-const monsterTemplates = [
-  {
-    name: "迷失影子",
-    intro: "牠看起來不像你……但眼睛是空的。",
-    baseHp: 40,
-    baseAtk: 6
-  },
-  {
-    name: "腐敗樹靈",
-    intro: "腐爛的樹皮微微顫動……似乎正在凝視你。",
-    baseHp: 55,
-    baseAtk: 8
-  },
-  {
-    name: "深林怨魂",
-    intro: "怨念聚成的霧氣慢慢靠近你。",
-    baseHp: 70,
-    baseAtk: 10
-  }
-];
+import monstersData from "../data/monsters.json" with { type: "json" };
 
-// ===== 怪物生成工廠 =====
+// 怪物 scaling：等比成長（你的選擇 A）
+// HP = baseHp + floor * 12
+// ATK = baseAtk + floor * 2
+// level = floor
+
 export function generateMonster(floor = 1) {
-  const base = monsterTemplates[Math.floor(Math.random() * monsterTemplates.length)];
 
-  const level = floor;
-  const hp = Math.floor(base.baseHp + floor * 12);
-  const atk = Math.floor(base.baseAtk + floor * 2);
+  // 從怪物池中挑一隻
+  const list = monstersData.normal;
+  const base = list[Math.floor(Math.random() * list.length)];
+
+  // 成長倍率（等比）
+  const hp = Math.floor(base.hp + floor * 12);
+  const atk = Math.floor(base.atk + floor * 2);
 
   return {
-    name: `${base.name}（Lv.${level}）`,
-    level,
+    id: base.id,
+    name: `${base.name}（Lv.${floor}）`,
     intro: base.intro,
-    hp,
+    level: floor,
     maxHp: hp,
-    atk
+    hp,
+    atk,
+    tags: base.tags || []
   };
 }
