@@ -21,15 +21,16 @@ const text = {
 **「那麼……你想承受多少痛苦呢？」**`
 };
 
+
 // =======================================================
 //                      Start 主功能
 // =======================================================
 
 export async function startGame(interaction, players, id = null) {
 
-  // ----------------------------------------------------
-  //   第一次 /start（Slash Command）
-  // ----------------------------------------------------
+  // -----------------------
+  // 第一次 /start → 選職業
+  // -----------------------
   if (!id) {
 
     const embed = new EmbedBuilder()
@@ -48,16 +49,15 @@ export async function startGame(interaction, players, id = null) {
       new ButtonBuilder().setCustomId("start_class_E").setLabel("暗月刺客").setStyle(ButtonStyle.Secondary)
     );
 
-    // ⭐ Slash command 必須用 reply()
     return interaction.reply({
       embeds: [embed],
       components: [row, row2]
     });
   }
 
-  // ----------------------------------------------------
-  //                  ★ 選職業
-  // ----------------------------------------------------
+  // -----------------------
+  // ★ 選職業
+  // -----------------------
   if (id.startsWith("start_class_")) {
 
     const classMap = {
@@ -87,23 +87,21 @@ export async function startGame(interaction, players, id = null) {
       new ButtonBuilder().setCustomId("start_diff_Lunatic").setLabel("……你真的要這樣？").setStyle(ButtonStyle.Primary)
     );
 
-    // ⭐ 按鈕互動必須用 update()
     return interaction.update({
       embeds: [embed],
       components: [row]
     });
   }
 
-  // ----------------------------------------------------
-  //                   ★ 選難度
-  // ----------------------------------------------------
+  // -----------------------
+  // ★ 選難度
+  // -----------------------
   if (id.startsWith("start_diff_")) {
 
     const userId = interaction.user.id;
     const temp = players.get(userId);
 
     const diff = id.replace("start_diff_", "");
-
     const stats = initializeStats(temp.class);
 
     stats.maxHp = stats.hp;
@@ -137,4 +135,5 @@ export async function startGame(interaction, players, id = null) {
       components: [row]
     });
   }
-}
+
+} // ← ★★★ 這裡才是 startGame 正確結束的大括號
