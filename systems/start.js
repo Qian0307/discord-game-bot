@@ -1,3 +1,27 @@
+import {
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
+} from "discord.js";
+
+import { initializeStats } from "./stats.js";
+import floors from "../data/floors.json" with { type: "json" };
+
+const text = {
+  intro: `**「……醒來吧。」**
+
+黑霧像蛇一樣纏上你的腳踝。
+低語聲在你的骨縫間震盪。
+
+**「選擇……你的形體。」**
+五道扭曲的影子在你面前凝結——每一道，都象徵不同的詛咒。`,
+
+  difficulty: `黑霧再次靠近你的耳朵——  
+**「那麼……你想承受多少痛苦呢？」**`
+};
+
+
 // =======================================================
 //                 《Start 主功能》
 // =======================================================
@@ -37,7 +61,7 @@ export async function startGame(interaction, players, id = null) {
       });
     }
 
-  } // ←★★★ 這個大括號是你缺失的（整個崩壞的原因）★★★
+  } // ←★★★ 正確放置的括號（關閉 if (!id)）
 
   // =======================================================
   //                   ★ 選職業
