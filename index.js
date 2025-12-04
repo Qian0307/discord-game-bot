@@ -67,35 +67,39 @@ client.once("ready", () => {
 // ===== 互動事件核心 =====
 client.on("interactionCreate", async (interaction) => {
 
-  // ====================================================================
-  // Slash Commands
-  // ====================================================================
-  if (interaction.isChatInputCommand()) {
-    const cmd = interaction.commandName;
+  console.log("收到事件 →", {
+    type: interaction.type,
+    isButton: interaction.isButton(),
+    customId: interaction.customId
+  });
 
-    if (cmd === "start") {
-      return startGame(interaction, players, null);
-    }
-    if (cmd === "skills") {
-      return handleSkillMenu(interaction, players);
-    }
-    if (cmd === "inventory") {
-      return handleInventoryAction(interaction, players);
-    }
-
+  // 必須用這段，不准用 isMessageComponent()
+  if (!interaction.isChatInputCommand() && !interaction.isButton()) {
+    console.log("被擋住了：不是指令也不是按鈕");
     return;
   }
 
-  // ====================================================================
-  // Buttons (唯一可靠檢查)
-  // ====================================================================
-  if (!interaction.isButton()) return;
+  // ------ Slash commands ------
+  if (interaction.isChatInputCommand()) {
+    if (interaction.commandName === "start") return startGame(interaction, players, null);
+    if (interaction.commandName === "skills") return handleSkillMenu(interaction, players);
+    if (interaction.commandName === "inventory") return handleInventoryAction(interaction, players);
+  }
 
+  // ------ 按鈕 ------
   const id = interaction.customId;
   const userId = interaction.user.id;
 
-  // 所有按鈕都先 deferUpdate（避免 Discord 互動失敗）
-  await interaction.deferUpdate();
+  console.log("按鈕觸發 →", id);
+
+  if (id.startsWith("start_")) return startGame(interaction, players, id);
+  if (id.startsWith("battle_")) return handleBattleAction(interaction, players, id);
+  if (id.startsWith("dungeon_event_")) return handleEventResult(interaction, players, id);
+  if (id === "dungeon_next") return goToNextFloor(interaction, players.get(userId));
+  if (id.startsWith("dungeon_")) return handleDungeonAction(interaction, players, id);
+  if (id.startsWith("inv_")) return handleInventoryAction(interaction, players, id);
+});
+
 
   // ====================================================================
   // Start 系列（職業、難度）
@@ -143,3 +147,4 @@ client.on("interactionCreate", async (interaction) => {
 
 // ===== 登入 Bot =====
 client.login(process.env.TOKEN);
+
