@@ -2,8 +2,11 @@ import monsters from "../data/monsters.json" with { type: "json" };
 
 export function generateMonster(floorData) {
 
-  const group = floorData.monsterGroup || "forest";
-  const list = monsters[group];
+const monster = generateMonster(floorData);
+
+// ★★ 最重要：一定要寫回 Map，否則戰鬥無法持續 ★★
+player.currentMonster = monster;
+players.set(player.id ?? interaction.user.id, player);
 
   if (!list || list.length === 0) {
     console.error("❌ [Monster] 找不到怪物資料 group =", group);
