@@ -1,176 +1,52 @@
 {
-  "fog": [
+  "early": [
     {
-      "title": "濃霧中的低語",
-      "description": "黑霧突然變得濃稠，有聲音在呼喚你的名字……但那聲音不是你的。",
+      "title": "搖晃的樹洞",
+      "description": "一個樹洞在微微顫抖。你靠近時，它像是在吸氣。",
       "options": [
-        {
-          "id": "fog_listen",
-          "label": "傾聽",
-          "result": "你側耳傾聽……黑霧竄入你的耳朵。你的頭開始劇痛。",
-          "hp": -10
-        },
-        {
-          "id": "fog_ignore",
-          "label": "忽略",
-          "result": "你專注前行，但霧氣仍縈繞不去。",
-          "hp": 0
-        },
-        {
-          "id": "fog_breathe",
-          "label": "深吸一口霧",
-          "result": "你的肺被冰冷充滿……霧氣灌入你的身體，反而使你暫時清醒。",
-          "mp": 10
-        }
+        { "id": "touch", "label": "伸手觸碰", "result": "你感到刺痛。", "hp": -5 },
+        { "id": "listen", "label": "靠近傾聽", "result": "你聽見自己的聲音……在樹裡面。", "luk": +1 }
       ]
     },
     {
-      "title": "霧中倒影",
-      "description": "你在霧裡看到一個模糊的人影，看起來像你自己，但站得比你更直。",
+      "title": "碎裂的低語",
+      "description": "你聽見有人叫你的名字，但聲音破碎又模糊。",
       "options": [
-        {
-          "id": "fog_touch",
-          "label": "觸碰",
-          "result": "倒影抓住了你的手腕，從你身上撕走了什麼。",
-          "hp": -8,
-          "luk": -1
-        },
-        {
-          "id": "fog_walk",
-          "label": "繞路走過去",
-          "result": "倒影沒有追上你……你的心跳卻變快了。",
-          "hp": 0
-        }
+        { "id": "follow", "label": "追上去", "result": "你撞到看不見的牆。", "hp": -3 },
+        { "id": "ignore", "label": "無視", "result": "聲音停止。你的心更堅定了。", "str": +1 }
       ]
     }
   ],
 
-  "curse": [
+  "mid": [
     {
-      "title": "詛咒的符文石",
-      "description": "一塊黑色石頭浮在半空，表面刻滿蠕動的符文。",
+      "title": "腐化之水",
+      "description": "一灘渾濁的水面映出了不是你的臉。",
       "options": [
-        {
-          "id": "curse_grab",
-          "label": "抓住它",
-          "result": "符文烙印在你的手上……力量湧入你的身體。",
-          "str": 3
-        },
-        {
-          "id": "curse_break",
-          "label": "試著弄碎",
-          "result": "石頭碎裂瞬間爆開……你被衝擊吞沒。",
-          "hp": -20
-        },
-        {
-          "id": "curse_consume",
-          "label": "吞下去（？）",
-          "result": "符文進入你體內……你的智慧似乎被打開了某扇門。",
-          "int": 4,
-          "curse": 5
-        }
-      ]
-    },
-    {
-      "title": "被詛咒的哭泣聲",
-      "description": "你聽到有人在哭……但聲音聽起來像是從你的胸口傳來。",
-      "options": [
-        {
-          "id": "curse_follow",
-          "label": "追尋聲音",
-          "result": "你發現一個看不見臉的孩子……他把什麼塞進你手裡。",
-          "luk": 3
-        },
-        {
-          "id": "curse_run",
-          "label": "逃離",
-          "result": "哭泣聲纏在你背後……你越跑越喘。",
-          "hp": -5
-        }
+        { "id": "drink", "label": "喝下去", "result": "味道像金屬與土壤。你感覺奇怪的力量。", "int": +2, "hp": -5 },
+        { "id": "wash", "label": "清洗臉部", "result": "你的思緒變清晰了。", "agi": +2 }
       ]
     }
   ],
 
-  "mirror": [
+  "late": [
     {
-      "title": "湖面的倒影扭曲",
-      "description": "你在湖面看到自己的倒影伸出手，像是要抓住你。",
+      "title": "無聲哭泣者",
+      "description": "你看到影子在抖動，像是在哭泣。",
       "options": [
-        {
-          "id": "mirror_stare",
-          "label": "凝視倒影",
-          "result": "你看到不屬於自己的記憶——大腦一陣刺痛。",
-          "mp": 15
-        },
-        {
-          "id": "mirror_touch",
-          "label": "觸碰水面",
-          "result": "倒影抓住你，把你的手往下拉！",
-          "hp": -18
-        },
-        {
-          "id": "mirror_ignore",
-          "label": "直接離開",
-          "result": "你離開時，倒影還在凝視你。",
-          "hp": 0
-        }
-      ]
-    },
-    {
-      "title": "錯位之影",
-      "description": "你的影子比你晚了半秒才跟上動作。",
-      "options": [
-        {
-          "id": "mirror_sync",
-          "label": "調整呼吸與影子同步",
-          "result": "你突然理解了影子的節奏……反應速度提升。",
-          "agi": 3
-        },
-        {
-          "id": "mirror_step",
-          "label": "跨步離開",
-          "result": "影子扭曲成一張嘴咬你腳踝。",
-          "hp": -10
-        }
+        { "id": "hug", "label": "抱住牠", "result": "影子融進你的胸腔。", "maxHp": +10 },
+        { "id": "run", "label": "後退", "result": "影子變得暴躁，撕裂你。", "hp": -10 }
       ]
     }
   ],
 
-  "silence": [
+  "final": [
     {
-      "title": "完全的寂靜",
-      "description": "聲音全部消失……連你的心跳也聽不到。",
+      "title": "深淵回聲",
+      "description": "你的聲音在黑霧中回響，但似乎不是你在說話。",
       "options": [
-        {
-          "id": "silence_scream",
-          "label": "尖叫",
-          "result": "你的聲音被黑暗吞噬……但壓力釋放讓你精神集中。",
-          "int": 2
-        },
-        {
-          "id": "silence_wait",
-          "label": "靜靜等待",
-          "result": "沉默壓迫著你……你喘不過氣來。",
-          "hp": -12
-        }
-      ]
-    },
-    {
-      "title": "無聲的腳步",
-      "description": "你聽不到自己的腳步聲……但能聽到另一個在你後面。",
-      "options": [
-        {
-          "id": "silence_turn",
-          "label": "轉頭",
-          "result": "什麼都沒有。但空氣變冷了。",
-          "luk": 2
-        },
-        {
-          "id": "silence_run",
-          "label": "快跑",
-          "result": "你跌倒，被某個看不見的東西踩過。",
-          "hp": -15
-        }
+        { "id": "reply", "label": "回應牠", "result": "聲音入侵你的意識。", "int": +3 },
+        { "id": "reject", "label": "拒絕", "result": "深淵不滿地抓走你一部分生命。", "hp": -15 }
       ]
     }
   ]
