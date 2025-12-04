@@ -25,7 +25,7 @@ export async function handleDungeonAction(interaction, players, id) {
   const player = players.get(userId);
 
   if (!player) {
-    return interaction.update({
+    return interaction.editReply({
       content: "你的靈魂尚未被詛咒……請輸入 `/start`。",
       components: []
     });
@@ -79,7 +79,7 @@ async function enterFloor(interaction, player) {
       .setStyle(ButtonStyle.Success)
   );
 
-  return interaction.update({ embeds: [embed], components: [row] });
+  return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
 
@@ -150,7 +150,7 @@ async function handleObservation(interaction, player, floor) {
       .setStyle(ButtonStyle.Success)
   );
 
-  return interaction.update({ embeds: [embed], components: [row] });
+  return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
 
@@ -178,7 +178,7 @@ async function triggerEvent(interaction, player, floor) {
     );
   });
 
-  return interaction.update({ embeds: [embed], components: [row] });
+  return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
 
@@ -215,7 +215,7 @@ async function triggerMonster(interaction, player, floor) {
       .setStyle(ButtonStyle.Danger)
   );
 
-  return interaction.update({ embeds: [embed], components: [row] });
+  return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
 
@@ -240,7 +240,7 @@ export async function handleEventResult(interaction, player, id) {
   }
 
   if (!eventData) {
-    return interaction.update("⚠ 無法解析事件結果。");
+    return interaction.editReply("⚠ 無法解析事件結果。");
   }
 
   const op = eventData.option;
@@ -272,32 +272,7 @@ export async function handleEventResult(interaction, player, id) {
       .setStyle(ButtonStyle.Primary)
   );
 
-  return interaction.update({ embeds: [embed], components: [row] });
-}
-
-
-// =======================================================================
-//                             下一層
-// =======================================================================
-
-export async function goToNextFloor(interaction, player) {
-
-  player.currentFloor++;
-  player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.2));
-
-  if (player.currentFloor > 20) {
-    return interaction.update({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("🌑 終章")
-          .setDescription("你成功走出森林……但你已經不再是從前的你。")
-          .setColor("#1e1b4b")
-      ],
-      components: []
-    });
-  }
-
-  return enterFloor(interaction, player);
+  return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
 
@@ -306,7 +281,7 @@ export async function goToNextFloor(interaction, player) {
 // =======================================================================
 
 async function sendDeath(interaction) {
-  return interaction.update({
+  return interaction.editReply({
     embeds: [
       new EmbedBuilder()
         .setTitle("💀 你死了")
@@ -316,3 +291,4 @@ async function sendDeath(interaction) {
     components: []
   });
 }
+
