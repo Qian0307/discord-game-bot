@@ -76,24 +76,24 @@ client.on("interactionCreate", async (interaction) => {
       return handleInventoryAction(interaction, players);
   }
 
-  // ---------------- Start 系列 ----------------
+  // ---------------- Start 系列（不能 defer）----------------
   if (id?.startsWith("start_")) {
     return startGame(interaction, players, id);
   }
 
-  // ---------------- 事件結果（放前面）----------------
+  // ---------------- 事件結果（一定要優先）----------------
   if (id?.startsWith("dungeon_event_")) {
     await interaction.deferUpdate();
     return handleEventResult(interaction, players, id);
   }
 
-  // ---------------- 進入迷霧 / 地城行動 ----------------
+  // ---------------- 地城核心（前進、觀察、使用、進入迷霧）----------------
   if (id === "dungeon_enter" || id?.startsWith("dungeon_act_")) {
     await interaction.deferUpdate();
     return handleDungeonAction(interaction, players, id);
   }
 
-  // ---------------- 戰鬥 ----------------
+  // ---------------- 戰鬥（攻擊、防禦、技能、逃跑）----------------
   if (id?.startsWith("battle_")) {
     await interaction.deferUpdate();
     return handleBattleAction(interaction, players, id);
@@ -111,7 +111,8 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.deferUpdate();
     return handleInventoryAction(interaction, players, id);
   }
+});
 
-}); 
 
 client.login(process.env.TOKEN);
+
