@@ -64,7 +64,7 @@ client.on("interactionCreate", async (interaction) => {
   const id = interaction.customId;
   const userId = interaction.user.id;
 
-  // ---------------- Slash Commands ----------------
+  // -------- Slash 指令 --------
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === "start")
       return startGame(interaction, players, null);
@@ -76,37 +76,40 @@ client.on("interactionCreate", async (interaction) => {
       return handleInventoryAction(interaction, players);
   }
 
-  // ---------------- Start 系列（不能 defer）----------------
+  // -------- Start 系列 --------
   if (id?.startsWith("start_")) {
     return startGame(interaction, players, id);
   }
 
-  // ---------------- 事件結果（一定要優先）----------------
+  // -------- 事件結果（必須早處理）--------
   if (id?.startsWith("dungeon_event_")) {
     await interaction.deferUpdate();
     return handleEventResult(interaction, players, id);
   }
 
-  // ---------------- 地城核心（前進、觀察、使用、進入迷霧）----------------
-  if (id === "dungeon_enter" || id?.startsWith("dungeon_act_")) {
+  // -------- 地城行動（前進、觀察、使用道具）--------
+  if (
+    id === "dungeon_enter" ||
+    id?.startsWith("dungeon_act_")
+  ) {
     await interaction.deferUpdate();
     return handleDungeonAction(interaction, players, id);
   }
 
-  // ---------------- 戰鬥（攻擊、防禦、技能、逃跑）----------------
+  // -------- 戰鬥按鈕（這段必須在事件 / 地城後面）--------
   if (id?.startsWith("battle_")) {
     await interaction.deferUpdate();
     return handleBattleAction(interaction, players, id);
   }
 
-  // ---------------- 下一層 ----------------
+  // -------- 下一層 --------
   if (id === "dungeon_next") {
     await interaction.deferUpdate();
     const player = players.get(userId);
     return goToNextFloor(interaction, player);
   }
 
-  // ---------------- 背包 ----------------
+  // -------- 背包 --------
   if (id?.startsWith("inv_")) {
     await interaction.deferUpdate();
     return handleInventoryAction(interaction, players, id);
@@ -114,5 +117,7 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 
+
 client.login(process.env.TOKEN);
+
 
