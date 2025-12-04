@@ -62,7 +62,9 @@ client.on("interactionCreate", async (interaction) => {
   const id = interaction.customId;
   const userId = interaction.user.id;
 
-  // ------ Slash commands ------
+  // ───────────────────────────────────────────────
+  //  Slash Commands
+  // ───────────────────────────────────────────────
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === "start") {
       return startGame(interaction, players, null);
@@ -75,40 +77,48 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 
-  // =============================================================
-  //                   ★ 事件（一定要放最上面）
-  // =============================================================
+  // ───────────────────────────────────────────────
+  //  ★ 事件（必須最高優先，避免被 dungeon_ 誤判）
+  // ───────────────────────────────────────────────
   if (id?.startsWith("dungeon_event_")) {
     await interaction.deferUpdate();
     return handleEventResult(interaction, players.get(userId), id);
   }
 
-  // ------ Start（職業+難度）------
-  if (id && id.startsWith("start_")) {
+  // ───────────────────────────────────────────────
+  //  Start 選職業 / 選難度（第二優先）
+  // ───────────────────────────────────────────────
+  if (id?.startsWith("start_")) {
     return startGame(interaction, players, id);
   }
 
-  // ------ 戰鬥 ------
+  // ───────────────────────────────────────────────
+  //  戰鬥系統
+  // ───────────────────────────────────────────────
   if (id?.startsWith("battle_")) {
     await interaction.deferUpdate();
     return handleBattleAction(interaction, players, id);
   }
 
-  // ------ 下一層 ------
+  // ───────────────────────────────────────────────
+  //  下一層
+  // ───────────────────────────────────────────────
   if (id === "dungeon_next") {
     await interaction.deferUpdate();
     return goToNextFloor(interaction, players.get(userId));
   }
 
-  // =============================================================
-  //                   ★ 地城系統（前進 / 觀察 / 使用道具）
-  // =============================================================
+  // ───────────────────────────────────────────────
+  //  ★ 地城系統（前進 / 觀察 / 使用道具 / 進入迷霧）
+  // ───────────────────────────────────────────────
   if (id?.startsWith("dungeon_")) {
     await interaction.deferUpdate();
     return handleDungeonAction(interaction, players, id);
   }
 
-  // ------ 背包 ------
+  // ───────────────────────────────────────────────
+  //  背包
+  // ───────────────────────────────────────────────
   if (id?.startsWith("inv_")) {
     await interaction.deferUpdate();
     return handleInventoryAction(interaction, players, id);
@@ -118,4 +128,5 @@ client.on("interactionCreate", async (interaction) => {
 
 // ===== 登入 Bot =====
 client.login(process.env.TOKEN);
+
 
