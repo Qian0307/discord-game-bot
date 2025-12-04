@@ -1,5 +1,5 @@
 // =======================================================================
-//                         戰鬥系統 v1.0（最終修正版）
+//                         戰鬥系統 v1.1（最終修正版）
 // =======================================================================
 
 import {
@@ -22,7 +22,7 @@ export async function handleBattleAction(interaction, players, id) {
 
   const userId = interaction.user.id;
   const player = players.get(userId);
-  const monster = player.currentMonster;
+  const monster = player?.currentMonster;
 
   if (!monster) {
     return interaction.update({
@@ -34,7 +34,7 @@ export async function handleBattleAction(interaction, players, id) {
   const action = id.replace("battle_", "");
   let log = "";
 
-  // 一次性裝備加成（沒有裝備就跳過）
+  // ------- 套用裝備加成（一次性） -------
   applyEquipmentBonus(player);
 
 
@@ -47,8 +47,7 @@ export async function handleBattleAction(interaction, players, id) {
   }
 
   else if (action === "skill") {
-    // 技能 UI 交由 skills.js 控制
-    return triggerSkill(interaction, player, monster);
+    return triggerSkill(interaction, player, monster); 
   }
 
   else if (action === "guard") {
@@ -57,7 +56,7 @@ export async function handleBattleAction(interaction, players, id) {
   }
 
   else if (action === "run") {
-    const result = tryRun(player);
+    const result = tryRun(player, monster);
     if (result.success) {
       return interaction.update({
         embeds: [
@@ -110,7 +109,7 @@ export async function handleBattleAction(interaction, players, id) {
 
 function playerAttack(player, monster) {
 
-  const critRate = 0.1 + player.luk * 0.01;    // LUK 影響暴擊率
+  const critRate = 0.1 + player.luk * 0.01;    // LUK 影響暴擊
   const isCrit = Math.random() < critRate;
 
   let dmg = Math.floor(player.str + Math.random() * 3);
@@ -135,7 +134,7 @@ function monsterAttack(player, monster) {
   let dmg = Math.floor(monster.atk * (0.8 + Math.random() * 0.4));
 
   if (player.isGuard) {
-    dmg = Math.floor(dmg * 0.6); // 減傷 40%
+    dmg = Math.floor(dmg * 0.6);
     player.isGuard = false;
   }
 
@@ -143,18 +142,6 @@ function monsterAttack(player, monster) {
   player.hp -= dmg;
 
   return `**${monster.name}** 對你造成 **${dmg} 傷害**！`;
-}
-
-
-
-// =======================================================================
-//                         嘗試逃跑（受 AGI 影響）
-// =======================================================================
-
-function tryRun(player) {
-  const base = 0.35;
-  const bonus = player.agi * 0.015;
-  return { success: Math.random() < base + bonus };
 }
 
 
@@ -179,7 +166,6 @@ async function handleMonsterDeath(interaction, player, monster) {
     msg += `\n獲得 **1 技能點**！`;
   }
 
-  // 清除戰鬥
   player.currentMonster = null;
 
   return interaction.update({
