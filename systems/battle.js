@@ -1,5 +1,5 @@
 // =======================================================================
-//                         戰鬥系統 v1.0（完整版）
+//                         戰鬥系統 v1.0（最終修正版）
 // =======================================================================
 
 import {
@@ -25,13 +25,16 @@ export async function handleBattleAction(interaction, players, id) {
   const monster = player.currentMonster;
 
   if (!monster) {
-    return interaction.editReply("⚠ 找不到戰鬥對象。");
+    return interaction.update({
+      content: "⚠ 找不到戰鬥對象。",
+      components: []
+    });
   }
 
   const action = id.replace("battle_", "");
   let log = "";
 
-  // ------- 套用裝備加成（一次性，沒有就跳過） -------
+  // 一次性裝備加成（沒有裝備就跳過）
   applyEquipmentBonus(player);
 
 
@@ -44,7 +47,8 @@ export async function handleBattleAction(interaction, players, id) {
   }
 
   else if (action === "skill") {
-    return triggerSkill(interaction, player, monster); // 進入技能 UI
+    // 技能 UI 交由 skills.js 控制
+    return triggerSkill(interaction, player, monster);
   }
 
   else if (action === "guard") {
@@ -53,9 +57,9 @@ export async function handleBattleAction(interaction, players, id) {
   }
 
   else if (action === "run") {
-    const result = tryRun(player, monster);
+    const result = tryRun(player);
     if (result.success) {
-      return interaction.editReply({
+      return interaction.update({
         embeds: [
           new EmbedBuilder()
             .setTitle("🏃 逃跑成功")
@@ -106,7 +110,7 @@ export async function handleBattleAction(interaction, players, id) {
 
 function playerAttack(player, monster) {
 
-  const critRate = 0.1 + player.luk * 0.01;    // LUK 影響暴擊
+  const critRate = 0.1 + player.luk * 0.01;    // LUK 影響暴擊率
   const isCrit = Math.random() < critRate;
 
   let dmg = Math.floor(player.str + Math.random() * 3);
@@ -131,7 +135,7 @@ function monsterAttack(player, monster) {
   let dmg = Math.floor(monster.atk * (0.8 + Math.random() * 0.4));
 
   if (player.isGuard) {
-    dmg = Math.floor(dmg * 0.6);
+    dmg = Math.floor(dmg * 0.6); // 減傷 40%
     player.isGuard = false;
   }
 
@@ -147,12 +151,10 @@ function monsterAttack(player, monster) {
 //                         嘗試逃跑（受 AGI 影響）
 // =======================================================================
 
-function tryRun(player, monster) {
+function tryRun(player) {
   const base = 0.35;
   const bonus = player.agi * 0.015;
-  return {
-    success: Math.random() < base + bonus
-  };
+  return { success: Math.random() < base + bonus };
 }
 
 
@@ -177,9 +179,10 @@ async function handleMonsterDeath(interaction, player, monster) {
     msg += `\n獲得 **1 技能點**！`;
   }
 
+  // 清除戰鬥
   player.currentMonster = null;
 
-  return interaction.editReply({
+  return interaction.update({
     embeds: [
       new EmbedBuilder()
         .setTitle("⚔ 勝利")
@@ -205,7 +208,7 @@ async function handleMonsterDeath(interaction, player, monster) {
 
 async function sendDeath(interaction) {
 
-  return interaction.editReply({
+  return interaction.update({
     embeds: [
       new EmbedBuilder()
         .setTitle("💀 你死了")
@@ -241,7 +244,7 @@ async function updateBattleUI(interaction, player, monster, log) {
     new ButtonBuilder().setCustomId("battle_run").setLabel("逃跑").setStyle(ButtonStyle.Danger)
   );
 
-  return interaction.editReply({
+  return interaction.update({
     embeds: [embed],
     components: [row]
   });
