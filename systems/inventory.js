@@ -1,25 +1,26 @@
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+// =======================================================================
+//                      背包系統 Inventory v1.0
+// =======================================================================
+
+import {
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
+} from "discord.js";
+
 import items from "../data/items.json" with { type: "json" };
 
-// ===== 顯示背包 =====
-export async function handleInventoryAction(interaction, players, id) {
 
-  await interaction.deferUpdate(); // ★ 防止 3 秒 timeout
+// =======================================================================
+//                         主入口 /inventory
+// =======================================================================
 
-  const userId = interaction.user.id;
-  const player = players.get(userId);
+export async function handleInventoryAction(interaction, player, id) {
 
-  if (!player) {
-    return interaction.editReply({
-      content: "靈魂尚未成形……請先輸入 `/start`。",
-      embeds: [],
-      components: []
-    });
-  }
-
-  // 開啟背包
-  if (id === "inv_open" || id === "dungeon_act_use") {
-    return openInventory(interaction, player);
+  // 第一次進來（slash command）
+  if (!id) {
+    return showInventory(interaction, player);
   }
 
   // 使用道具
@@ -27,144 +28,168 @@ export async function handleInventoryAction(interaction, players, id) {
     const itemId = id.replace("inv_use_", "");
     return useItem(interaction, player, itemId);
   }
+
+  // 裝備物品
+  if (id.startsWith("inv_equip_")) {
+    const itemId = id.replace("inv_equip_", "");
+    return equipItem(interaction, player, itemId);
+  }
 }
 
 
 
-// ===== 打開背包界面 =====
-async function openInventory(interaction, player) {
+// =======================================================================
+//                         顯示背包 UI
+// =======================================================================
+
+async function showInventory(interaction, player) {
 
   if (!player.inventory || player.inventory.length === 0) {
-    return interaction.editReply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("🎒 背包空無一物")
-          .setDescription("黑霧低語：**「什麼都沒有。」**")
-          .setColor("#1e1b4b")
-      ],
-      components: [
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("dungeon_act_forward")
-            .setLabel("返回迷霧")
-            .setStyle(ButtonStyle.Secondary)
-        )
-      ]
+    return interaction.reply({
+      content: "你的背包是空的。",
+      ephemeral: true
     });
   }
 
   const embed = new EmbedBuilder()
     .setTitle("🎒 背包")
-    .setDescription("黑霧之中，你摸索著你的物品……")
-    .setColor("#312e81");
+    .setColor("#0ea5e9")
+    .setDescription(
+      player.inventory
+        .map(i => `• **${i.name}**（${i.type}）`)
+        .join("\n")
+    );
 
   const row = new ActionRowBuilder();
 
-  // 為每個物品建立按鈕
-  player.inventory.forEach((itemId) => {
-    const item = items[itemId];
-    if (!item) return;
-
+  player.inventory.forEach(item => {
     row.addComponents(
       new ButtonBuilder()
-        .setCustomId(`inv_use_${itemId}`)
-        .setLabel(`${item.icon} ${item.name}`)
-        .setStyle(ButtonStyle.Primary)
+        .setCustomId(
+          item.type === "potion"
+            ? `inv_use_${item.id}`
+            : `inv_equip_${item.id}`
+        )
+        .setLabel(`${item.name}`)
+        .setStyle(
+          item.type === "potion"
+            ? ButtonStyle.Success
+            : ButtonStyle.Primary
+        )
     );
   });
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.reply({
+    embeds: [embed],
+    components: [row],
+    ephemeral: true
+  });
 }
 
 
 
-// ===== 使用道具 =====
+// =======================================================================
+//                          使用道具（藥水）
+// =======================================================================
+
 async function useItem(interaction, player, itemId) {
 
   const item = items[itemId];
-
   if (!item) {
-    return interaction.editReply({
-      content: "此道具不存在。",
-      embeds: [],
-      components: []
-    });
+    return interaction.editReply(`⚠ 找不到道具：${itemId}`);
   }
 
-  let result = `你使用了 **${item.name}**。\n`;
-
-  // ===== 回復系統 =====
-  if (item.hp) {
-    player.hp += item.hp;
-    result += `你的 HP 回復了 **${item.hp}** 點。\n`;
+  if (item.type !== "potion") {
+    return interaction.editReply("這個道具不能使用。");
   }
 
-  if (item.mp) {
-    player.mp += item.mp;
-    result += `你的 MP 回復了 **${item.mp}** 點。\n`;
+  let text = "";
+
+  if (item.restoreHp) {
+    const heal = Math.min(item.restoreHp, player.maxHp - player.hp);
+    player.hp += heal;
+    text += `❤️ 回復 **${heal} HP**！\n`;
   }
 
-  // ===== 屬性變化 =====
-  if (item.str) {
-    player.str += item.str;
-    result += `力量提升 **${item.str}**。\n`;
+  if (item.restoreMp) {
+    const heal = Math.min(item.restoreMp, player.maxMp - player.mp);
+    player.mp += heal;
+    text += `🔵 回復 **${heal} MP**！\n`;
   }
 
-  if (item.agi) {
-    player.agi += item.agi;
-    result += `敏捷提升 **${item.agi}**。\n`;
-  }
-
-  if (item.int) {
-    player.int += item.int;
-    result += `智慧提升 **${item.int}**。\n`;
-  }
-
-  if (item.luk) {
-    player.luk += item.luk;
-    result += `幸運提升 **${item.luk}**。\n`;
-  }
-
-  // ===== 解詛咒 =====
-  if (item.removeCurse) {
-    result += "**某些詛咒從你體內脫落……**\n";
-    player.hp += 15;
-    player.mp += 5;
-  }
-
-  // ===== 裝備系統 =====
-  if (item.equip) {
-    const eq = item.equip;
-    result += `\n你裝備了 **${item.name}**。\n`;
-
-    if (eq.hp) player.hp += eq.hp;
-    if (eq.mp) player.mp += eq.mp;
-    if (eq.str) player.str += eq.str;
-    if (eq.agi) player.agi += eq.agi;
-    if (eq.int) player.int += eq.int;
-    if (eq.luk) player.luk += eq.luk;
-  }
-
-  // ===== 使用後移除道具 =====
-  const index = player.inventory.indexOf(itemId);
-  if (index !== -1) {
-    player.inventory.splice(index, 1);
-  }
-
-  const embed = new EmbedBuilder()
-    .setTitle("🎒 使用道具")
-    .setDescription(result)
-    .setColor("#0f172a");
-
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("dungeon_act_forward")
-      .setLabel("繼續前進")
-      .setStyle(ButtonStyle.Primary)
-  );
+  // 用完後移除
+  player.inventory = player.inventory.filter(i => i.id !== itemId);
 
   return interaction.editReply({
-    embeds: [embed],
-    components: [row]
+    embeds: [
+      new EmbedBuilder()
+        .setTitle(`🧪 使用：${item.name}`)
+        .setDescription(text)
+        .setColor("#22c55e")
+    ],
+    components: []
+  });
+}
+
+
+
+// =======================================================================
+//                          裝備系統（武器 防具 飾品）
+// =======================================================================
+
+async function equipItem(interaction, player, itemId) {
+
+  const item = items[itemId];
+  if (!item || item.type === "potion") {
+    return interaction.editReply("這個物品不能裝備。");
+  }
+
+  const slot = item.slot;
+
+  // 卸下舊裝備
+  const previous = player.equipment[slot];
+  if (previous) {
+    player.inventory.push(previous);
+  }
+
+  // 裝備新物品
+  player.equipment[slot] = item;
+
+  // 從背包移除
+  player.inventory = player.inventory.filter(i => i.id !== itemId);
+
+  return interaction.editReply({
+    embeds: [
+      new EmbedBuilder()
+        .setTitle("🛡 裝備成功")
+        .setDescription(
+          `你裝備了 **${item.name}**！\n\n` +
+          (previous ? `卸下：${previous.name}` : "")
+        )
+        .setColor("#8b5cf6")
+    ],
+    components: []
+  });
+}
+
+
+
+// =======================================================================
+//                      套用裝備加成（由 battle.js 呼叫）
+// =======================================================================
+
+export function applyEquipmentBonus(player) {
+
+  const eq = player.equipment;
+
+  Object.values(eq).forEach(item => {
+    if (!item) return;
+
+    if (item.bonusHp) player.hp += item.bonusHp;
+    if (item.bonusMp) player.mp += item.bonusMp;
+    if (item.bonusStr) player.str += item.bonusStr;
+    if (item.bonusAgi) player.agi += item.bonusAgi;
+    if (item.bonusInt) player.int += item.bonusInt;
+    if (item.bonusLuk) player.luk += item.bonusLuk;
   });
 }
