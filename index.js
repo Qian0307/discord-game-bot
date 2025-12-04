@@ -55,15 +55,14 @@ client.once("ready", () => {
 });
 
 // ===== 互動事件核心 =====
-client.on("interactionCreate", async interaction => {
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isButton() && !interaction.isChatInputCommand()) return;
+
   const id = interaction.customId;
-  const userId = interaction.user?.id;
+  const userId = interaction.user.id;
 
-  // ------------------------
-  // Slash commands
-  // ------------------------
+  // ------------------ Slash commands ------------------
   if (interaction.isChatInputCommand()) {
-
     if (interaction.commandName === "start")
       return startGame(interaction, players, null);
 
@@ -74,43 +73,38 @@ client.on("interactionCreate", async interaction => {
       return handleInventoryAction(interaction, players);
   }
 
-  // ------------------------
-  // 按鈕互動
-  // ------------------------
-  if (!interaction.isButton()) return;
-
-  // Start 系統（職業 + 難度）
-  if (id.startsWith("start_"))
+  // ------------------ Start 系列 ------------------
+  if (id?.startsWith("start_")) {
+    await interaction.deferUpdate();
     return startGame(interaction, players, id);
-
-  // 進入下一層
-  if (id === "dungeon_next") {
-    await interaction.deferUpdate();
-    const player = players.get(userId);
-    return goToNextFloor(interaction, player);
   }
 
-  // 地城主系統
-  if (id === "dungeon_enter" || id.startsWith("dungeon_act_")) {
+  // ------------------ 事件按鈕（事件結果） ------------------
+  if (id?.startsWith("dungeon_event_")) {
     await interaction.deferUpdate();
-    return handleDungeonAction(interaction, players, id);
+    return handleEventResult(interaction, players, id);
   }
 
-  // 地城事件
-  if (id.startsWith("dungeon_event_")) {
-    await interaction.deferUpdate();
-    const player = players.get(userId);
-    return handleEventResult(interaction, player, id);
-  }
-
-  // 戰鬥系統
-  if (id.startsWith("battle_")) {
+  // ------------------ 戰鬥按鈕 ------------------
+  if (id?.startsWith("battle_")) {
     await interaction.deferUpdate();
     return handleBattleAction(interaction, players, id);
   }
 
-  // 背包系統
-  if (id.startsWith("inv_")) {
+  // ------------------ 進入迷霧（必須獨立處理） ------------------
+  if (id === "dungeon_enter") {
+    await interaction.deferUpdate();
+    return handleDungeonAction(interaction, players, id);
+  }
+
+  // ------------------ 地城行動（前進 / 觀察 / 使用） ------------------
+  if (id?.startsWith("dungeon_act_")) {
+    await interaction.deferUpdate();
+    return handleDungeonAction(interaction, players, id);
+  }
+
+  // ------------------ 背包 ------------------
+  if (id?.startsWith("inv_")) {
     await interaction.deferUpdate();
     return handleInventoryAction(interaction, players, id);
   }
@@ -118,3 +112,4 @@ client.on("interactionCreate", async interaction => {
 
 // ===== 登入 Bot =====
 client.login(process.env.TOKEN);
+
