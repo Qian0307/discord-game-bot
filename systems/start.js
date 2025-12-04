@@ -1,27 +1,3 @@
-import {
-  EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle
-} from "discord.js";
-
-import { initializeStats } from "./stats.js";
-import floors from "../data/floors.json" with { type: "json" };
-
-const text = {
-  intro: `**「……醒來吧。」**
-
-黑霧像蛇一樣纏上你的腳踝。
-低語聲在你的骨縫間震盪。
-
-**「選擇……你的形體。」**
-五道扭曲的影子在你面前凝結——每一道，都象徵不同的詛咒。`,
-
-  difficulty: `黑霧再次靠近你的耳朵——  
-**「那麼……你想承受多少痛苦呢？」**`
-};
-
-
 // =======================================================
 //                 《Start 主功能》
 // =======================================================
@@ -50,17 +26,18 @@ export async function startGame(interaction, players, id = null) {
     );
 
     if (!interaction.replied && !interaction.deferred) {
-  return interaction.reply({
-    embeds: [embed],
-    components: [row, row2]
-  });
-} else {
-  return interaction.update({
-    embeds: [embed],
-    components: [row, row2]
-  });
-}
+      return interaction.reply({
+        embeds: [embed],
+        components: [row, row2]
+      });
+    } else {
+      return interaction.update({
+        embeds: [embed],
+        components: [row, row2]
+      });
+    }
 
+  } // ←★★★ 這個大括號是你缺失的（整個崩壞的原因）★★★
 
   // =======================================================
   //                   ★ 選職業
@@ -111,11 +88,9 @@ export async function startGame(interaction, players, id = null) {
     // 初始化屬性
     const stats = initializeStats(temp.class);
 
-    // ★★★ 避免錯誤：必須補 maxHP / maxMP ★★★
     stats.maxHp = stats.hp;
     stats.maxMp = stats.mp;
 
-    // 存入玩家資料
     players.set(userId, {
       id: userId,
       class: temp.class,
