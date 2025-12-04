@@ -1,32 +1,27 @@
-// =======================================================================
-//                           怪物生成系統 v1.0
-// =======================================================================
+import monsters from "../data/monsters.json" with { type: "json" };
 
-import monstersData from "../data/monsters.json" with { type: "json" };
+// 安全取得怪物資料（保證不會 undefined）
+function getMonsterList(floor) {
+  const key = floor.toString();
 
-// 怪物 scaling：等比成長（你的選擇 A）
-// HP = baseHp + floor * 12
-// ATK = baseAtk + floor * 2
-// level = floor
+  if (!monsters[key] || monsters[key].length === 0) {
+    // 如果該層沒有怪物 → 強制使用第 1 層怪物
+    return monsters["1"];
+  }
 
-export function generateMonster(floor = 1) {
+  return monsters[key];
+}
 
-  // 從怪物池中挑一隻
-  const list = monstersData.normal;
-  const base = list[Math.floor(Math.random() * list.length)];
+export function generateMonster(floor) {
+  const monsterList = getMonsterList(floor);
 
-  // 成長倍率（等比）
-  const hp = Math.floor(base.hp + floor * 12);
-  const atk = Math.floor(base.atk + floor * 2);
+  // 隨機挑選怪物
+  const data = monsterList[Math.floor(Math.random() * monsterList.length)];
 
   return {
-    id: base.id,
-    name: `${base.name}（Lv.${floor}）`,
-    intro: base.intro,
-    level: floor,
-    maxHp: hp,
-    hp,
-    atk,
-    tags: base.tags || []
+    name: data.name,
+    intro: data.intro,
+    hp: data.hp,
+    atk: data.atk
   };
 }
