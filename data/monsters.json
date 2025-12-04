@@ -1,217 +1,55 @@
 {
-  "weak": [
-    {
-      "id": "mist_wolf",
-      "name": "迷霧狼",
-      "hp": 40,
-      "atk": 8,
-      "intro": "牠的身體不斷在霧中瓦解又重新凝結。"
-    },
-    {
-      "id": "lost_shadow",
-      "name": "迷失影子",
-      "hp": 35,
-      "atk": 10,
-      "intro": "牠看起來像你……但眼睛是空的。"
-    }
-  ],
-
-  "shadow": [
-    {
-      "id": "shadow_crawler",
-      "name": "影爬行者",
-      "hp": 60,
-      "atk": 15,
-      "intro": "牠的手腳像蜘蛛般分裂，拖著殘影前進。"
-    },
-    {
-      "id": "dark_screamer",
-      "name": "黑暗尖叫者",
-      "hp": 55,
-      "atk": 18,
-      "intro": "尖叫聲直接在你腦中爆開，而非透過耳朵。"
-    }
-  ],
-
-  "slime": [
-    {
-      "id": "acid_slime",
-      "name": "酸蝕史萊姆",
-      "hp": 50,
-      "atk": 12,
-      "intro": "透明的身體裡有某種腐蝕性的氣泡。"
-    }
-  ],
-
-  "water": [
-    {
-      "id": "drowned_spirit",
-      "name": "溺亡之靈",
-      "hp": 65,
-      "atk": 14,
-      "intro": "牠的四肢不斷滴水，水跡卻沒有落在地上。"
-    }
-  ],
-
-  "dead": [
-    {
-      "id": "burnt_husk",
-      "name": "焦屍殼",
-      "hp": 70,
-      "atk": 16,
-      "intro": "軀殼像被燒空，內部沒有器官。"
-    },
-    {
-      "id": "rotting_walker",
-      "name": "腐行者",
-      "hp": 85,
-      "atk": 17,
-      "intro": "牠散發的氣味比死亡還更像死亡。"
-    }
-  ],
-
   "forest": [
     {
-      "id": "root_snare",
-      "name": "纏根獸",
-      "hp": 75,
-      "atk": 15,
-      "intro": "纏繞的樹根像是想把你拖進土裡。"
+      "id": "shadow_lost",
+      "name": "迷失影子",
+      "intro": "牠的影子與身體不同步。",
+      "hp": 40,
+      "atk": 6,
+      "tags": ["shadow"]
+    },
+    {
+      "id": "rotting_spirit",
+      "name": "腐敗樹靈",
+      "intro": "樹皮像傷口般呼吸著。",
+      "hp": 55,
+      "atk": 8,
+      "tags": ["nature"]
+    },
+    {
+      "id": "weeping_branch",
+      "name": "哭泣枝骸",
+      "intro": "枝條濕漉漉的……那不是水。",
+      "hp": 65,
+      "atk": 9,
+      "tags": ["ghost", "nature"]
     }
   ],
 
-  "curse": [
+  "horror": [
     {
-      "id": "curse_eye",
-      "name": "詛咒之眼",
+      "id": "eyeless_stalker",
+      "name": "無眼潛獵者",
+      "intro": "牠沒有眼睛，但牠看得見你。",
       "hp": 90,
-      "atk": 20,
-      "intro": "牠的凝視正在剝落你的思維。"
-    }
-  ],
-
-  "moon": [
+      "atk": 13,
+      "tags": ["horror"]
+    },
     {
-      "id": "moon_watcher",
-      "name": "月之凝視者",
-      "hp": 95,
-      "atk": 22,
-      "intro": "牠的眼睛像月光，被撕裂成兩半。"
-    }
-  ],
-
-  "rot": [
-    {
-      "id": "fungal_brute",
-      "name": "腐菇巨人",
+      "id": "bleak_maw",
+      "name": "枯咬之喉",
+      "intro": "牠的嘴巴縫在一起，但聲音從裂縫裡溢出。",
       "hp": 110,
-      "atk": 24,
-      "intro": "黏稠的液體不停從牠的身體滲出。"
-    }
-  ],
-
-  "void": [
+      "atk": 15,
+      "tags": ["beast", "horror"]
+    },
     {
-      "id": "void_wanderer",
-      "name": "虛無遊者",
+      "id": "void_hound",
+      "name": "虛無獵犬",
+      "intro": "牠的存在讓你的影子發抖。",
       "hp": 120,
-      "atk": 28,
-      "intro": "牠的影子比身體大得不合常理。"
+      "atk": 17,
+      "tags": ["void"]
     }
-  ],
-
-  "flesh": [
-    {
-      "id": "flesh_maw",
-      "name": "血肉之口",
-      "hp": 130,
-      "atk": 27,
-      "intro": "牠的身體沒有骨頭……卻有太多嘴巴。"
-    }
-  ],
-
-  "chaos": [
-    {
-      "id": "chaos_spirit",
-      "name": "失序之靈",
-      "hp": 140,
-      "atk": 30,
-      "intro": "你盯著牠太久會開始看見不存在的東西。"
-    }
-  ],
-
-  "night": [
-    {
-      "id": "night_feeder",
-      "name": "夜之噬者",
-      "hp": 150,
-      "atk": 32,
-      "intro": "牠的嘴巴永遠張著，像在等某個名字。"
-    }
-  ],
-
-  "king": [
-    {
-      "id": "broken_knight",
-      "name": "破碎騎士",
-      "hp": 160,
-      "atk": 35,
-      "intro": "盔甲裡沒有身體，只有空洞的嘆息。"
-    }
-  ],
-
-  "spirit": [
-    {
-      "id": "soul_wailer",
-      "name": "靈魂哭嚎者",
-      "hp": 170,
-      "atk": 38,
-      "intro": "牠的聲音讓你的心跳開始倒流。"
-    }
-  ],
-
-  "core": [
-    {
-      "id": "core_fragment",
-      "name": "深淵碎靈",
-      "hp": 200,
-      "atk": 40,
-      "intro": "牠看起來像破碎的靈魂碎片……但也許是你的一部分。"
-    }
-  ],
-
-
-  "boss": {
-    "shadow_beast": {
-      "id": "shadow_beast",
-      "name": "影獸",
-      "hp": 180,
-      "atk": 30,
-      "intro": "牠的身體由無數人的影子糾纏而成。"
-    },
-
-    "abyss_guardian": {
-      "id": "abyss_guardian",
-      "name": "深淵守望者",
-      "hp": 260,
-      "atk": 40,
-      "intro": "牠從深淵底部爬出……像是被迫來到這裡。"
-    },
-
-    "abyss_eye": {
-      "id": "abyss_eye",
-      "name": "深淵之眼",
-      "hp": 350,
-      "atk": 55,
-      "intro": "牠沒有身體，卻能看穿你的想法。"
-    },
-
-    "true_self": {
-      "id": "true_self",
-      "name": "你的真實之形",
-      "hp": 500,
-      "atk": 70,
-      "intro": "牠不是怪物。  那是你自己——被森林完成之後的樣子。"
-    }
-  }
+  ]
 }
