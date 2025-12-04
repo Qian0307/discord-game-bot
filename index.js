@@ -64,7 +64,7 @@ client.once("ready", () => {
 
 // ===== 按鈕 & 指令事件核心 =====
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isButton() && !interaction.isChatInputCommand()) return;
+ if (!interaction.isChatInputCommand() && !interaction.isMessageComponent()) return;
 
   const id = interaction.customId;
   const userId = interaction.user.id;
@@ -121,3 +121,4 @@ client.on("interactionCreate", async (interaction) => {
 
 // ===== 登入 Bot =====
 client.login(process.env.TOKEN);
+
