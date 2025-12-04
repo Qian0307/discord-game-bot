@@ -209,7 +209,8 @@ async function triggerEvent(interaction, player, floor) {
 
 async function triggerMonster(interaction, player, floor) {
 
-  const monster = generateMonster(player.currentFloor);
+  const floorData = floors[player.currentFloor];
+  const monster = generateMonster(floorData);
   player.currentMonster = monster;
 
   const embed = new EmbedBuilder()
