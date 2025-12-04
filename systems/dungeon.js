@@ -249,39 +249,50 @@ async function triggerMonster(interaction, player, floor) {
 export async function handleEventResult(interaction, player, id) {
 
   const optionId = id.replace("dungeon_event_", "");
+
   const floor = floors[player.currentFloor];
   const list = eventsData[floor.eventGroup];
 
+  if (!list) {
+    return interaction.editReply("⚠ 無法找到事件組：" + floor.eventGroup);
+  }
+
   let eventData = null;
 
+  // 正確比對 option id
   for (const evt of list) {
-    const found = evt.options.find(o => o.id === optionId);
+    const found = evt.options.find(opt => opt.id === optionId);
     if (found) {
-      eventData = { event: evt, option: found };
+      eventData = { evt, opt: found };
       break;
     }
   }
 
   if (!eventData) {
-    return interaction.editReply("⚠ 無法解析事件結果。");
+    return interaction.editReply("⚠ 找不到事件選項：" + optionId);
   }
 
-  const op = eventData.option;
-  let result = op.result + "\n";
+  const { evt, opt } = eventData;
+  let result = opt.result + "\n";
 
-  ["hp", "mp", "str", "agi", "int", "luk"].forEach(attr => {
-    if (op[attr]) {
-      player[attr] += op[attr];
-      result += `\n**${attr.toUpperCase()} ${op[attr] > 0 ? "+" : ""}${op[attr]}**`;
+  // 套用屬性變動
+  const attrs = ["hp", "mp", "str", "agi", "int", "luk", "maxHp"];
+  attrs.forEach(attr => {
+    if (opt[attr] !== undefined) {
+      player[attr] = (player[attr] || 0) + opt[attr];
+      result += `\n**${attr.toUpperCase()} ${opt[attr] > 0 ? "+" : ""}${opt[attr]}**`;
     }
   });
 
-  if (op.curse) {
-    player.hp = Math.max(1, player.hp - op.curse);
-    result += `\n\n**詛咒侵蝕生命 ${op.curse} 點。**`;
+  // 血量不能超過上限（如果 maxHp 被動增加）
+  if (player.hp > player.maxHp) {
+    player.hp = player.maxHp;
   }
 
-  if (player.hp <= 0) return sendDeath(interaction);
+  // 死亡判定
+  if (player.hp <= 0) {
+    return sendDeath(interaction);
+  }
 
   const embed = new EmbedBuilder()
     .setTitle("⚠ 事件結果")
@@ -297,7 +308,6 @@ export async function handleEventResult(interaction, player, id) {
 
   return interaction.editReply({ embeds: [embed], components: [row] });
 }
-
 
 
 // =======================================================================
