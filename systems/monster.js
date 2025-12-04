@@ -18,6 +18,20 @@ export function generateMonster(floorData) {
   // 4️⃣ 自動 scaling（依樓層數加成）
   monster.hp = Math.floor(monster.hp * (1 + floorData.level * 0.1));
   monster.atk = Math.floor(monster.atk * (1 + floorData.level * 0.1));
+  export function generateMonster(floor) {
+  const pool = monsters.forest; // or pick by floor
+  const monster = JSON.parse(JSON.stringify(
+    pool[Math.floor(Math.random() * pool.length)]
+  ));
+
+  // ★★★ 修補必須屬性 ★★★
+  monster.maxHp = monster.hp;
+  monster.maxMp = 0;
+  monster.level = floor;
+
+  return monster;
+}
+
 
   return monster;
 }
