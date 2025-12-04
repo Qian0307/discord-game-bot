@@ -106,6 +106,28 @@ async function processFloorAction(interaction, player, action) {
   }
 }
 
+// =======================================================================
+//                       下一層
+// =======================================================================
+
+export async function goToNextFloor(interaction, player) {
+  player.currentFloor++;
+
+  const embed = new EmbedBuilder()
+    .setTitle(`⬆ 你前往下一層…`)
+    .setDescription(`你踏入 **第 ${player.currentFloor} 層**。\n黑霧的低語開始變得更加清晰。`)
+    .setColor("#1e1b4b");
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("dungeon_enter")
+      .setLabel("繼續探索")
+      .setStyle(ButtonStyle.Primary)
+  );
+
+  return interaction.editReply({ embeds: [embed], components: [row] });
+}
+
 
 
 // =======================================================================
