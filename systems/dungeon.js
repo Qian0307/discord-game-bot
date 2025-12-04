@@ -1,5 +1,5 @@
 // =======================================================================
-//                         地城系統 Dungeon v1.0（修正版）
+//                         地城系統 Dungeon v1.0（最終修正版）
 // =======================================================================
 
 import {
@@ -25,7 +25,7 @@ export async function handleDungeonAction(interaction, players, id) {
   const player = players.get(userId);
 
   if (!player) {
-    return interaction.editReply({
+    return interaction.update({
       content: "你的靈魂尚未被詛咒……請輸入 `/start`。",
       components: []
     });
@@ -44,6 +44,7 @@ export async function handleDungeonAction(interaction, players, id) {
     return processFloorAction(interaction, player, act);
   }
 }
+
 
 
 // =======================================================================
@@ -74,7 +75,7 @@ async function enterFloor(interaction, player) {
       .setStyle(ButtonStyle.Success)
   );
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
 
 
@@ -104,28 +105,6 @@ async function processFloorAction(interaction, player, action) {
 
     return triggerMonster(interaction, player, floor);
   }
-}
-
-// =======================================================================
-//                       下一層
-// =======================================================================
-
-export async function goToNextFloor(interaction, player) {
-  player.currentFloor++;
-
-  const embed = new EmbedBuilder()
-    .setTitle(`⬆ 你前往下一層…`)
-    .setDescription(`你踏入 **第 ${player.currentFloor} 層**。\n黑霧的低語開始變得更加清晰。`)
-    .setColor("#1e1b4b");
-
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("dungeon_enter")
-      .setLabel("繼續探索")
-      .setStyle(ButtonStyle.Primary)
-  );
-
-  return interaction.editReply({ embeds: [embed], components: [row] });
 }
 
 
@@ -169,7 +148,7 @@ async function handleObservation(interaction, player, floor) {
       .setStyle(ButtonStyle.Success)
   );
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
 
 
@@ -189,6 +168,7 @@ async function triggerEvent(interaction, player, floor) {
     .setColor("#6d28d9");
 
   const row = new ActionRowBuilder();
+
   event.options.forEach(opt => {
     row.addComponents(
       new ButtonBuilder()
@@ -198,7 +178,7 @@ async function triggerEvent(interaction, player, floor) {
     );
   });
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
 
 
@@ -209,8 +189,7 @@ async function triggerEvent(interaction, player, floor) {
 
 async function triggerMonster(interaction, player, floor) {
 
-  const floorData = floors[player.currentFloor];
-  const monster = generateMonster(floorData);
+  const monster = generateMonster(floor);
   player.currentMonster = monster;
 
   const embed = new EmbedBuilder()
@@ -237,7 +216,7 @@ async function triggerMonster(interaction, player, floor) {
       .setStyle(ButtonStyle.Danger)
   );
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
 
 
@@ -246,53 +225,44 @@ async function triggerMonster(interaction, player, floor) {
 //                          事件結果處理
 // =======================================================================
 
-export async function handleEventResult(interaction, player, id) {
+export async function handleEventResult(interaction, players, id) {
 
-  const optionId = id.replace("dungeon_event_", "");
+  const userId = interaction.user.id;
+  const player = players.get(userId);
+
+  const optId = id.replace("dungeon_event_", "");
 
   const floor = floors[player.currentFloor];
   const list = eventsData[floor.eventGroup];
 
-  if (!list) {
-    return interaction.editReply("⚠ 無法找到事件組：" + floor.eventGroup);
-  }
-
   let eventData = null;
 
-  // 正確比對 option id
   for (const evt of list) {
-    const found = evt.options.find(opt => opt.id === optionId);
-    if (found) {
-      eventData = { evt, opt: found };
-      break;
-    }
+    const found = evt.options.find(o => o.id === optId);
+    if (found) eventData = { evt, opt: found };
   }
 
   if (!eventData) {
-    return interaction.editReply("⚠ 找不到事件選項：" + optionId);
+    return interaction.update({
+      content: "⚠ 找不到事件結果。",
+      components: []
+    });
   }
 
-  const { evt, opt } = eventData;
+  const { opt } = eventData;
   let result = opt.result + "\n";
 
-  // 套用屬性變動
   const attrs = ["hp", "mp", "str", "agi", "int", "luk", "maxHp"];
-  attrs.forEach(attr => {
-    if (opt[attr] !== undefined) {
-      player[attr] = (player[attr] || 0) + opt[attr];
-      result += `\n**${attr.toUpperCase()} ${opt[attr] > 0 ? "+" : ""}${opt[attr]}**`;
+  attrs.forEach(k => {
+    if (opt[k] !== undefined) {
+      player[k] = (player[k] || 0) + opt[k];
+      result += `\n**${k.toUpperCase()} ${opt[k] > 0 ? "+" : ""}${opt[k]}**`;
     }
   });
 
-  // 血量不能超過上限（如果 maxHp 被動增加）
-  if (player.hp > player.maxHp) {
-    player.hp = player.maxHp;
-  }
+  if (player.hp > player.maxHp) player.hp = player.maxHp;
 
-  // 死亡判定
-  if (player.hp <= 0) {
-    return sendDeath(interaction);
-  }
+  if (player.hp <= 0) return sendDeath(interaction);
 
   const embed = new EmbedBuilder()
     .setTitle("⚠ 事件結果")
@@ -306,8 +276,9 @@ export async function handleEventResult(interaction, player, id) {
       .setStyle(ButtonStyle.Primary)
   );
 
-  return interaction.editReply({ embeds: [embed], components: [row] });
+  return interaction.update({ embeds: [embed], components: [row] });
 }
+
 
 
 // =======================================================================
@@ -315,7 +286,7 @@ export async function handleEventResult(interaction, player, id) {
 // =======================================================================
 
 async function sendDeath(interaction) {
-  return interaction.editReply({
+  return interaction.update({
     embeds: [
       new EmbedBuilder()
         .setTitle("💀 你死了")
