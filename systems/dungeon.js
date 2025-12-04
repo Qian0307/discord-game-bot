@@ -1,5 +1,5 @@
 // =======================================================================
-//                         地城系統 Dungeon v1.0（最終修正版）
+//                         地城系統 Dungeon v1.0（最終完整修正版）
 // =======================================================================
 
 import {
@@ -16,7 +16,7 @@ import { handleInventoryAction } from "./inventory.js";
 
 
 // =======================================================================
-//                         主入口：處理所有地城交互
+//          主入口：所有地城按鈕事件（由 index.js 呼叫）
 // =======================================================================
 
 export async function handleDungeonAction(interaction, players, id) {
@@ -26,29 +26,34 @@ export async function handleDungeonAction(interaction, players, id) {
 
   if (!player) {
     return interaction.update({
-      content: "你的靈魂尚未被詛咒……請輸入 `/start`。",
+      content: "⚠ 你還沒開始冒險。請輸入 `/start`。",
       components: []
     });
   }
 
   if (!player.currentFloor) player.currentFloor = 1;
 
-  // 進入樓層主頁
+  // ---- 進入樓層 ----
   if (id === "dungeon_enter") {
     return enterFloor(interaction, player);
   }
 
-  // 樓層行動
+  // ---- 前進 / 觀察 / 使用道具 ----
   if (id.startsWith("dungeon_act_")) {
     const act = id.replace("dungeon_act_", "");
     return processFloorAction(interaction, player, act);
+  }
+
+  // ---- 事件結果（在 index.js 也會呼叫 handleEventResult）----
+  if (id.startsWith("dungeon_event_")) {
+    return handleEventResult(interaction, player, id);
   }
 }
 
 
 
 // =======================================================================
-//                          樓層主頁 UI
+//                     樓層主頁畫面
 // =======================================================================
 
 async function enterFloor(interaction, player) {
@@ -61,18 +66,9 @@ async function enterFloor(interaction, player) {
     .setColor("#312e81");
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("dungeon_act_forward")
-      .setLabel("前進")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("dungeon_act_observe")
-      .setLabel("觀察")
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId("dungeon_act_use")
-      .setLabel("使用道具")
-      .setStyle(ButtonStyle.Success)
+    new ButtonBuilder().setCustomId("dungeon_act_forward").setLabel("前進").setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId("dungeon_act_observe").setLabel("觀察").setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId("dungeon_act_use").setLabel("使用道具").setStyle(ButtonStyle.Success)
   );
 
   return interaction.update({ embeds: [embed], components: [row] });
@@ -81,7 +77,7 @@ async function enterFloor(interaction, player) {
 
 
 // =======================================================================
-//                         樓層行動 Dispatcher
+//                      前進 / 觀察 / 使用道具
 // =======================================================================
 
 async function processFloorAction(interaction, player, action) {
@@ -99,10 +95,12 @@ async function processFloorAction(interaction, player, action) {
   if (action === "forward") {
     const rng = Math.random();
 
+    // ---- 遇到事件 ----
     if (rng < floor.eventChance) {
       return triggerEvent(interaction, player, floor);
     }
 
+    // ---- 遇到怪 ----
     return triggerMonster(interaction, player, floor);
   }
 }
@@ -110,7 +108,29 @@ async function processFloorAction(interaction, player, action) {
 
 
 // =======================================================================
-//                        觀察（偵查）系統
+//                     下一層 — ★你少的就是這個★
+// =======================================================================
+
+export async function goToNextFloor(interaction, player) {
+
+  player.currentFloor++;
+
+  const embed = new EmbedBuilder()
+    .setTitle("⬆ 你前往下一層……")
+    .setDescription(`你踏入 **第 ${player.currentFloor} 層**。\n黑霧的低語似乎更靠近了。`)
+    .setColor("#1e1b4b");
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId("dungeon_enter").setLabel("繼續探索").setStyle(ButtonStyle.Primary)
+  );
+
+  return interaction.update({ embeds: [embed], components: [row] });
+}
+
+
+
+// =======================================================================
+//                           觀察系統
 // =======================================================================
 
 async function handleObservation(interaction, player, floor) {
@@ -120,9 +140,7 @@ async function handleObservation(interaction, player, floor) {
   let text = "";
 
   if (Math.random() < chance) {
-    text =
-      "你停下腳步…黑霧退散，你似乎察覺到什麼。\n" +
-      "**「……有東西在盯著你。」**";
+    text = "你停下腳步…黑霧退散，你似乎察覺到什麼。\n**「……有東西在盯著你。」**";
 
     if (player.class === "被詛咒的孩子" && Math.random() < 0.5) {
       text += "\n\n一個不存在的聲音在你耳邊低語：**「右邊。」**";
@@ -138,14 +156,8 @@ async function handleObservation(interaction, player, floor) {
     .setColor("#4338ca");
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("dungeon_act_forward")
-      .setLabel("前進")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("dungeon_act_use")
-      .setLabel("使用道具")
-      .setStyle(ButtonStyle.Success)
+    new ButtonBuilder().setCustomId("dungeon_act_forward").setLabel("前進").setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId("dungeon_act_use").setLabel("使用道具").setStyle(ButtonStyle.Success)
   );
 
   return interaction.update({ embeds: [embed], components: [row] });
@@ -154,7 +166,7 @@ async function handleObservation(interaction, player, floor) {
 
 
 // =======================================================================
-//                         隨機事件 trigger
+//                           事件系統
 // =======================================================================
 
 async function triggerEvent(interaction, player, floor) {
@@ -168,7 +180,6 @@ async function triggerEvent(interaction, player, floor) {
     .setColor("#6d28d9");
 
   const row = new ActionRowBuilder();
-
   event.options.forEach(opt => {
     row.addComponents(
       new ButtonBuilder()
@@ -189,7 +200,8 @@ async function triggerEvent(interaction, player, floor) {
 
 async function triggerMonster(interaction, player, floor) {
 
-  const monster = generateMonster(floor);
+  const floorData = floors[player.currentFloor];
+  const monster = generateMonster(floorData);
   player.currentMonster = monster;
 
   const embed = new EmbedBuilder()
@@ -198,22 +210,10 @@ async function triggerMonster(interaction, player, floor) {
     .setColor("#b91c1c");
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("battle_attack")
-      .setLabel("攻擊")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("battle_skill")
-      .setLabel("技能")
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId("battle_guard")
-      .setLabel("防禦")
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId("battle_run")
-      .setLabel("逃跑")
-      .setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId("battle_attack").setLabel("攻擊").setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId("battle_skill").setLabel("技能").setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId("battle_guard").setLabel("防禦").setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId("battle_run").setLabel("逃跑").setStyle(ButtonStyle.Danger)
   );
 
   return interaction.update({ embeds: [embed], components: [row] });
@@ -222,47 +222,45 @@ async function triggerMonster(interaction, player, floor) {
 
 
 // =======================================================================
-//                          事件結果處理
+//                       事件結果處理
 // =======================================================================
 
-export async function handleEventResult(interaction, players, id) {
+export async function handleEventResult(interaction, player, id) {
 
-  const userId = interaction.user.id;
-  const player = players.get(userId);
-
-  const optId = id.replace("dungeon_event_", "");
-
+  const optionId = id.replace("dungeon_event_", "");
   const floor = floors[player.currentFloor];
   const list = eventsData[floor.eventGroup];
 
   let eventData = null;
 
   for (const evt of list) {
-    const found = evt.options.find(o => o.id === optId);
-    if (found) eventData = { evt, opt: found };
+    const found = evt.options.find(opt => opt.id === optionId);
+    if (found) {
+      eventData = { evt, opt: found };
+      break;
+    }
   }
 
   if (!eventData) {
-    return interaction.update({
-      content: "⚠ 找不到事件結果。",
-      components: []
-    });
+    return interaction.update("⚠ 無法解析事件結果。");
   }
 
   const { opt } = eventData;
   let result = opt.result + "\n";
 
   const attrs = ["hp", "mp", "str", "agi", "int", "luk", "maxHp"];
-  attrs.forEach(k => {
-    if (opt[k] !== undefined) {
-      player[k] = (player[k] || 0) + opt[k];
-      result += `\n**${k.toUpperCase()} ${opt[k] > 0 ? "+" : ""}${opt[k]}**`;
+  attrs.forEach(attr => {
+    if (opt[attr] !== undefined) {
+      player[attr] = (player[attr] || 0) + opt[attr];
+      result += `\n**${attr.toUpperCase()} ${opt[attr] > 0 ? "+" : ""}${opt[attr]}**`;
     }
   });
 
   if (player.hp > player.maxHp) player.hp = player.maxHp;
 
-  if (player.hp <= 0) return sendDeath(interaction);
+  if (player.hp <= 0) {
+    return sendDeath(interaction);
+  }
 
   const embed = new EmbedBuilder()
     .setTitle("⚠ 事件結果")
@@ -270,10 +268,7 @@ export async function handleEventResult(interaction, players, id) {
     .setColor("#4c1d95");
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("dungeon_act_forward")
-      .setLabel("繼續前進")
-      .setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId("dungeon_act_forward").setLabel("繼續前進").setStyle(ButtonStyle.Primary)
   );
 
   return interaction.update({ embeds: [embed], components: [row] });
@@ -282,16 +277,17 @@ export async function handleEventResult(interaction, players, id) {
 
 
 // =======================================================================
-//                             死亡
+//                           死亡畫面
 // =======================================================================
 
 async function sendDeath(interaction) {
+
   return interaction.update({
     embeds: [
       new EmbedBuilder()
         .setTitle("💀 你死了")
         .setDescription("黑霧將你完全吞噬……冒險結束。")
-        .setColor("#000000")
+        .setColor("#000")
     ],
     components: []
   });
