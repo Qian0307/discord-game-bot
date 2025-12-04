@@ -49,8 +49,18 @@ export async function startGame(interaction, players, id = null) {
       new ButtonBuilder().setCustomId("start_class_E").setLabel("暗月刺客").setStyle(ButtonStyle.Secondary)
     );
 
-    return interaction.reply({ embeds: [embed], components: [row, row2] });
-  }
+    if (!interaction.replied && !interaction.deferred) {
+  return interaction.reply({
+    embeds: [embed],
+    components: [row, row2]
+  });
+} else {
+  return interaction.update({
+    embeds: [embed],
+    components: [row, row2]
+  });
+}
+
 
   // =======================================================
   //                   ★ 選職業
