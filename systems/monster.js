@@ -1,27 +1,23 @@
 import monsters from "../data/monsters.json" with { type: "json" };
 
-// 安全取得怪物資料（保證不會 undefined）
-function getMonsterList(floor) {
-  const key = floor.toString();
+export function generateMonster(floorData) {
+  // 1️⃣ 從樓層資料取得 monsterGroup
+  const group = floorData.monsterGroup || "forest";
 
-  if (!monsters[key] || monsters[key].length === 0) {
-    // 如果該層沒有怪物 → 強制使用第 1 層怪物
-    return monsters["1"];
+  // 2️⃣ 拿到 monsters.json 對應的怪物清單
+  const list = monsters[group];
+
+  if (!list || list.length === 0) {
+    console.error("❌ [Monster] 找不到怪物資料 group =", group);
+    return null;
   }
 
-  return monsters[key];
-}
+  // 3️⃣ 隨機選怪
+  const monster = { ...list[Math.floor(Math.random() * list.length)] };
 
-export function generateMonster(floor) {
-  const monsterList = getMonsterList(floor);
+  // 4️⃣ 自動 scaling（依樓層數加成）
+  monster.hp = Math.floor(monster.hp * (1 + floorData.level * 0.1));
+  monster.atk = Math.floor(monster.atk * (1 + floorData.level * 0.1));
 
-  // 隨機挑選怪物
-  const data = monsterList[Math.floor(Math.random() * monsterList.length)];
-
-  return {
-    name: data.name,
-    intro: data.intro,
-    hp: data.hp,
-    atk: data.atk
-  };
+  return monster;
 }
