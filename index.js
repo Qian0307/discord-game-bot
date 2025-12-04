@@ -64,7 +64,7 @@ client.on("interactionCreate", async (interaction) => {
   // ================= Slash Command =================
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === "start") {
-      return startGame(interaction, players, null); // reply()
+      return startGame(interaction, players, null);
     }
 
     if (interaction.commandName === "skills") {
@@ -76,42 +76,42 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 
- // ================= Start 系列（不能 deferUpdate） =================
-if (id?.startsWith("start_")) {
-  return startGame(interaction, players, id);
-}
+  // ================= Start 系列 =================
+  if (id?.startsWith("start_")) {
+    return startGame(interaction, players, id);
+  }
 
-// ================= 進入迷霧 =================
-if (id === "dungeon_enter") {
-  await interaction.deferUpdate();
-  return handleDungeonAction(interaction, players, id);
-}
+  // ================= 進入迷霧 =================
+  if (id === "dungeon_enter") {
+    await interaction.deferUpdate();
+    return handleDungeonAction(interaction, players, id);
+  }
 
-// ================= 地城行動 =================
-if (id?.startsWith("dungeon_act_")) {
-  await interaction.deferUpdate();
-  return handleDungeonAction(interaction, players, id);
-}
+  // ================= 地城行動 =================
+  if (id?.startsWith("dungeon_act_")) {
+    await interaction.deferUpdate();
+    return handleDungeonAction(interaction, players, id);
+  }
 
-// ================= 事件結果 =================
-if (id?.startsWith("dungeon_event_")) {
-  await interaction.deferUpdate();
-  return handleEventResult(interaction, players, id);
-}
+  // ================= 事件結果 =================
+  if (id?.startsWith("dungeon_event_")) {
+    await interaction.deferUpdate();
+    return handleEventResult(interaction, players, id);
+  }
 
-// ================= 戰鬥 =================
-if (id?.startsWith("battle_")) {
-  await interaction.deferUpdate();
-  return handleBattleAction(interaction, players, id);
-}
+  // ================= 戰鬥 =================
+  if (id?.startsWith("battle_")) {
+    await interaction.deferUpdate();
+    return handleBattleAction(interaction, players, id);
+  }
 
-// ================= 背包 =================
-if (id?.startsWith("inv_")) {
-  await interaction.deferUpdate();
-  return handleInventoryAction(interaction, players, id);
+  // ================= 背包 =================
+  if (id?.startsWith("inv_")) {
+    await interaction.deferUpdate();
+    return handleInventoryAction(interaction, players, id);
+  }
+
+}); // ★★★ 正確關閉 interactionCreate ★★★
 
 // ===== 登入 Bot =====
 client.login(process.env.TOKEN);
-
-
-
