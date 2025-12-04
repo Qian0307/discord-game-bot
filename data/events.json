@@ -5,7 +5,7 @@
       "description": "一個樹洞在微微顫抖。你靠近時，它像是在吸氣。",
       "options": [
         { "id": "touch", "label": "伸手觸碰", "result": "你感到刺痛。", "hp": -5 },
-        { "id": "listen", "label": "靠近傾聽", "result": "你聽見自己的聲音……在樹裡面。", "luk": +1 }
+        { "id": "listen", "label": "靠近傾聽", "result": "你聽見自己的聲音，在樹裡面。", "luk": 1 }
       ]
     },
     {
@@ -13,7 +13,7 @@
       "description": "你聽見有人叫你的名字，但聲音破碎又模糊。",
       "options": [
         { "id": "follow", "label": "追上去", "result": "你撞到看不見的牆。", "hp": -3 },
-        { "id": "ignore", "label": "無視", "result": "聲音停止。你的心更堅定了。", "str": +1 }
+        { "id": "ignore", "label": "無視", "result": "聲音停止。你的心更堅定了。", "str": 1 }
       ]
     }
   ],
@@ -23,8 +23,8 @@
       "title": "腐化之水",
       "description": "一灘渾濁的水面映出了不是你的臉。",
       "options": [
-        { "id": "drink", "label": "喝下去", "result": "味道像金屬與土壤。你感覺奇怪的力量。", "int": +2, "hp": -5 },
-        { "id": "wash", "label": "清洗臉部", "result": "你的思緒變清晰了。", "agi": +2 }
+        { "id": "drink", "label": "喝下去", "result": "味道像金屬與土壤。你感覺奇怪的力量。", "int": 2, "hp": -5 },
+        { "id": "wash", "label": "清洗臉部", "result": "你的思緒變清晰了。", "agi": 2 }
       ]
     }
   ],
@@ -34,7 +34,7 @@
       "title": "無聲哭泣者",
       "description": "你看到影子在抖動，像是在哭泣。",
       "options": [
-        { "id": "hug", "label": "抱住牠", "result": "影子融進你的胸腔。", "maxHp": +10 },
+        { "id": "hug", "label": "抱住牠", "result": "影子融進你的胸腔。", "maxHp": 10 },
         { "id": "run", "label": "後退", "result": "影子變得暴躁，撕裂你。", "hp": -10 }
       ]
     }
@@ -45,7 +45,7 @@
       "title": "深淵回聲",
       "description": "你的聲音在黑霧中回響，但似乎不是你在說話。",
       "options": [
-        { "id": "reply", "label": "回應牠", "result": "聲音入侵你的意識。", "int": +3 },
+        { "id": "reply", "label": "回應牠", "result": "聲音入侵你的意識。", "int": 3 },
         { "id": "reject", "label": "拒絕", "result": "深淵不滿地抓走你一部分生命。", "hp": -15 }
       ]
     }
