@@ -79,34 +79,35 @@ client.on("interactionCreate", async (interaction) => {
       return handleInventoryAction(interaction, players);
   }
 
-  // ---------------- Start 系列（不可 deferUpdate）----------------
-  if (id?.startsWith("start_")) {
-    return startGame(interaction, players, id);
-  }
+  // ================= Start 系列 =================
+if (id?.startsWith("start_")) {
+  return startGame(interaction, players, id);
+}
 
-  // ---------------- 戰鬥 ----------------
-  if (id?.startsWith("battle_")) {
-    await interaction.deferUpdate();
-    return handleBattleAction(interaction, players, id);
-  }
+// ================= 戰鬥 =================
+if (id?.startsWith("battle_")) {
+  await interaction.deferUpdate();
+  return handleBattleAction(interaction, players, id);
+}
 
-  // ---------------- 事件結果（你的出錯點）----------------
-  if (id?.startsWith("dungeon_event_")) {
-    await interaction.deferUpdate();
-    return handleEventResult(interaction, players, id);
-  }
+// ================= 事件結果（一定要在這裡）=================
+if (id?.startsWith("dungeon_event_")) {
+  await interaction.deferUpdate();
+  return handleEventResult(interaction, players, id);
+}
 
-  // ---------------- 進入迷霧 ----------------
-  if (id === "dungeon_enter") {
-    await interaction.deferUpdate();
-    return handleDungeonAction(interaction, players, id);
-  }
+// ================= 進入迷霧 =================
+if (id === "dungeon_enter")) {
+  await interaction.deferUpdate();
+  return handleDungeonAction(interaction, players, id);
+}
 
-  // ---------------- 地城行動 ----------------
-  if (id?.startsWith("dungeon_act_")) {
-    await interaction.deferUpdate();
-    return handleDungeonAction(interaction, players, id);
-  }
+// ================= 地城行動 =================
+if (id?.startsWith("dungeon_act_")) {
+  await interaction.deferUpdate();
+  return handleDungeonAction(interaction, players, id);
+}
+
 
   // ---------------- 下一層 ----------------
   if (id === "dungeon_next") {
@@ -123,3 +124,4 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.login(process.env.TOKEN);
+
