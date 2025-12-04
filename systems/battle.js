@@ -1,5 +1,5 @@
 // =======================================================================
-//                          戰鬥系統（重寫最終版）
+//                         戰鬥系統 v1.0（完整版）
 // =======================================================================
 
 import {
@@ -10,10 +10,12 @@ import {
 } from "discord.js";
 
 import { addXP } from "./level.js";
+import { applyEquipmentBonus } from "./inventory.js";
+import { triggerSkill } from "./skills.js";
 
 
 // =======================================================================
-//                          主入口
+//                       主入口：所有戰鬥交互
 // =======================================================================
 
 export async function handleBattleAction(interaction, players, id) {
@@ -29,25 +31,29 @@ export async function handleBattleAction(interaction, players, id) {
   const action = id.replace("battle_", "");
   let log = "";
 
-  // -------------------------------------------------------------------
+  // ------- 套用裝備加成（一次性，沒有就跳過） -------
+  applyEquipmentBonus(player);
+
+
+  // ===================================================================
   //                             玩家行動
-  // -------------------------------------------------------------------
+  // ===================================================================
 
   if (action === "attack") {
     log = playerAttack(player, monster);
   }
 
-  if (action === "skill") {
-    log = playerSkill(player, monster);
+  else if (action === "skill") {
+    return triggerSkill(interaction, player, monster); // 進入技能 UI
   }
 
-  if (action === "guard") {
+  else if (action === "guard") {
     player.isGuard = true;
     log = "你舉起防禦姿態，本回合受到傷害減少 **40%**！";
   }
 
-  if (action === "run") {
-    const result = tryRun();
+  else if (action === "run") {
+    const result = tryRun(player, monster);
     if (result.success) {
       return interaction.editReply({
         embeds: [
@@ -64,30 +70,30 @@ export async function handleBattleAction(interaction, players, id) {
   }
 
 
-  // -------------------------------------------------------------------
-  //                        檢查怪物是否死亡
-  // -------------------------------------------------------------------
+  // ===================================================================
+  //                        檢查怪物死亡
+  // ===================================================================
 
   if (monster.hp <= 0) {
     return handleMonsterDeath(interaction, player, monster);
   }
 
 
-  // -------------------------------------------------------------------
-  //                            怪物反擊
-  // -------------------------------------------------------------------
+  // ===================================================================
+  //                        怪物反擊
+  // ===================================================================
 
   const enemyLog = monsterAttack(player, monster);
   log += `\n${enemyLog}`;
 
-  // 玩家死亡？
   if (player.hp <= 0) {
     return sendDeath(interaction);
   }
 
-  // -------------------------------------------------------------------
-  //                            更新戰鬥 UI
-  // -------------------------------------------------------------------
+
+  // ===================================================================
+  //                        回傳戰鬥狀態 UI
+  // ===================================================================
 
   return updateBattleUI(interaction, player, monster, log);
 }
@@ -95,13 +101,13 @@ export async function handleBattleAction(interaction, players, id) {
 
 
 // =======================================================================
-//                            玩家普攻
+//                         玩家普攻（含暴擊）
 // =======================================================================
 
 function playerAttack(player, monster) {
 
-  const critChance = 0.1 + player.luk * 0.01; // 暴擊率
-  const isCrit = Math.random() < critChance;
+  const critRate = 0.1 + player.luk * 0.01;    // LUK 影響暴擊
+  const isCrit = Math.random() < critRate;
 
   let dmg = Math.floor(player.str + Math.random() * 3);
 
@@ -110,52 +116,19 @@ function playerAttack(player, monster) {
   monster.hp -= dmg;
 
   return isCrit
-    ? `你施展猛烈的一擊！造成 **${dmg} 暴擊傷害**！`
+    ? `你發動猛烈的暴擊！造成 **${dmg} 傷害**！`
     : `你攻擊了 **${monster.name}**，造成 **${dmg} 傷害**。`;
 }
 
 
 
 // =======================================================================
-//                            玩家技能：咒術
-// =======================================================================
-
-function playerSkill(player, monster) {
-
-  if (player.mp < 10) {
-    return "你的 MP 不足，無法施放技能。";
-  }
-
-  player.mp -= 10;
-
-  const dmg = Math.floor(player.int * 2 + Math.random() * 6);
-
-  monster.hp -= dmg;
-
-  return `你施放咒術！黑霧爆裂，對 **${monster.name}** 造成 **${dmg} 傷害**！`;
-}
-
-
-
-// =======================================================================
-//                            嘗試逃跑
-// =======================================================================
-
-function tryRun() {
-  return {
-    success: Math.random() < 0.5
-  };
-}
-
-
-
-// =======================================================================
-//                         怪物攻擊邏輯
+//                         怪物攻擊（含防禦）
 // =======================================================================
 
 function monsterAttack(player, monster) {
 
-  let dmg = Math.floor(monster.atk * 0.8 + Math.random() * 3);
+  let dmg = Math.floor(monster.atk * (0.8 + Math.random() * 0.4));
 
   if (player.isGuard) {
     dmg = Math.floor(dmg * 0.6);
@@ -165,13 +138,27 @@ function monsterAttack(player, monster) {
   dmg = Math.max(1, dmg);
   player.hp -= dmg;
 
-  return `**${monster.name}** 反擊！造成你 **${dmg} 傷害**！`;
+  return `**${monster.name}** 對你造成 **${dmg} 傷害**！`;
 }
 
 
 
 // =======================================================================
-//                     怪物死亡 → 發放獎勵與按鈕
+//                         嘗試逃跑（受 AGI 影響）
+// =======================================================================
+
+function tryRun(player, monster) {
+  const base = 0.35;
+  const bonus = player.agi * 0.015;
+  return {
+    success: Math.random() < base + bonus
+  };
+}
+
+
+
+// =======================================================================
+//                     怪物死亡 → 發放獎勵
 // =======================================================================
 
 async function handleMonsterDeath(interaction, player, monster) {
@@ -182,17 +169,23 @@ async function handleMonsterDeath(interaction, player, monster) {
   const levelUps = addXP(player, xpGain);
   player.coins += coinGain;
 
-  let msg = `你擊敗了 **${monster.name}**！\n`;
-  msg += `獲得 **${xpGain} XP**、**${coinGain} 金幣**。\n`;
+  let msg = `✔ 你擊敗了 **${monster.name}**！\n`;
+  msg += `獲得：**${xpGain} XP**、**${coinGain} 金幣**。\n`;
 
   if (levelUps.length > 0) {
-    msg += `\n🎉 **升級！** → ${levelUps.map(l => `Lv.${l}`).join(", ")}`;
+    msg += `\n🎉 升級！→ ${levelUps.map(x => `Lv.${x}`).join("、")}`;
+    msg += `\n獲得 **1 技能點**！`;
   }
 
   player.currentMonster = null;
 
   return interaction.editReply({
-    content: msg,
+    embeds: [
+      new EmbedBuilder()
+        .setTitle("⚔ 勝利")
+        .setDescription(msg)
+        .setColor("#4ade80")
+    ],
     components: [
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -207,15 +200,16 @@ async function handleMonsterDeath(interaction, player, monster) {
 
 
 // =======================================================================
-//                         玩家死亡
+//                            玩家死亡
 // =======================================================================
 
 async function sendDeath(interaction) {
+
   return interaction.editReply({
     embeds: [
       new EmbedBuilder()
-        .setTitle("💀 你死亡了")
-        .setDescription("黑霧將你吞噬……冒險結束。")
+        .setTitle("💀 你死了")
+        .setDescription("黑霧將你完全吞噬。冒險於此終結。")
         .setColor("#000000")
     ],
     components: []
@@ -225,7 +219,7 @@ async function sendDeath(interaction) {
 
 
 // =======================================================================
-//                         更新戰鬥 UI
+//                         更新戰鬥畫面 UI
 // =======================================================================
 
 async function updateBattleUI(interaction, player, monster, log) {
@@ -234,8 +228,8 @@ async function updateBattleUI(interaction, player, monster, log) {
     .setTitle(`⚔ 與 ${monster.name} 的戰鬥`)
     .setDescription(
       `${monster.intro}\n\n` +
-      `你方 HP：**${player.hp}**　MP：**${player.mp}**\n` +
-      `敵方 HP：**${monster.hp}/${monster.maxHp}**\n\n` +
+      `你 HP：**${player.hp}/${player.maxHp}**　MP：**${player.mp}/${player.maxMp}**\n` +
+      `敵 HP：**${monster.hp}/${monster.maxHp}**\n\n` +
       log
     )
     .setColor("#b91c1c");
