@@ -60,8 +60,8 @@ export async function startGame(interaction, players, id = null) {
         components: [row, row2]
       });
     }
+  } // <== ✔ 這裡補上 if(!id) 的括號！！
 
-  } // ←★★★ 正確放置的括號（關閉 if (!id)）
 
   // =======================================================
   //                   ★ 選職業
@@ -109,7 +109,6 @@ export async function startGame(interaction, players, id = null) {
 
     const diff = id.replace("start_diff_", "");
 
-    // 初始化屬性
     const stats = initializeStats(temp.class);
 
     stats.maxHp = stats.hp;
@@ -141,4 +140,5 @@ export async function startGame(interaction, players, id = null) {
 
     return interaction.update({ embeds: [embed], components: [row] });
   }
-}
+
+} // <== ✔ 最終 function 結尾括號
