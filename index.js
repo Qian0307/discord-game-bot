@@ -97,7 +97,7 @@ if (id?.startsWith("dungeon_event_")) {
 }
 
 // ================= 進入迷霧 =================
-if (id === "dungeon_enter")) {
+if (id === "dungeon_enter") {
   await interaction.deferUpdate();
   return handleDungeonAction(interaction, players, id);
 }
@@ -124,4 +124,5 @@ if (id?.startsWith("dungeon_act_")) {
 });
 
 client.login(process.env.TOKEN);
+
 
