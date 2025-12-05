@@ -71,8 +71,15 @@ async function enterFloor(interaction, player) {
     new ButtonBuilder().setCustomId("dungeon_act_use").setLabel("使用道具").setStyle(ButtonStyle.Success)
   );
 
-  return interaction.update({ embeds: [embed], components: [row] });
+  // ★ 若是已經回覆過的互動，必須使用 update()
+  if (interaction.replied || interaction.deferred) {
+    return interaction.update({ embeds: [embed], components: [row] });
+  }
+
+  // ★ 第一次進迷霧（dungeon_enter）一定要用 reply()
+  return interaction.reply({ embeds: [embed], components: [row] });
 }
+
 
 
 
