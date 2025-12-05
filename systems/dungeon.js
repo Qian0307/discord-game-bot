@@ -232,6 +232,10 @@ async function triggerMonster(interaction, player, floor) {
 //                       事件結果處理
 // =======================================================================
 
+// =======================================================================
+//                       事件結果處理（修正版）
+// =======================================================================
+
 export async function handleEventResult(interaction, player, id) {
 
   const optionId = id.replace("dungeon_event_", "");
@@ -249,7 +253,7 @@ export async function handleEventResult(interaction, player, id) {
   }
 
   if (!eventData) {
-    return interaction.update("⚠ 無法解析事件結果。");
+    return safeReply(interaction, "⚠ 無法解析事件結果。");
   }
 
   const { opt } = eventData;
@@ -275,10 +279,33 @@ export async function handleEventResult(interaction, player, id) {
     .setColor("#4c1d95");
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId("dungeon_act_forward").setLabel("繼續前進").setStyle(ButtonStyle.Primary)
+    new ButtonBuilder()
+      .setCustomId("dungeon_act_forward")
+      .setLabel("繼續前進")
+      .setStyle(ButtonStyle.Primary)
   );
 
-  return interaction.update({ embeds: [embed], components: [row] });
+  return safeUpdate(interaction, { embeds: [embed], components: [row] });
+}
+
+
+
+// =======================================================================
+//                 ★★★ 安全更新工具：永不交互失敗 ★★★
+// =======================================================================
+
+function safeUpdate(interaction, data) {
+  if (interaction.replied || interaction.deferred) {
+    return interaction.editReply(data).catch(() => {});
+  }
+  return interaction.update(data).catch(() => {});
+}
+
+function safeReply(interaction, msg) {
+  if (interaction.replied || interaction.deferred) {
+    return interaction.editReply({ content: msg, components: [] }).catch(() => {});
+  }
+  return interaction.reply({ content: msg, components: [] }).catch(() => {});
 }
 
 
