@@ -1,5 +1,5 @@
 // =======================================================================
-//                         雙月小機器人 index.js（最終穩定版）
+//                         雙月小機器人 index.js（穩定修正版）
 // =======================================================================
 
 import {
@@ -20,13 +20,13 @@ import {
   handleEventResult,
   goToNextFloor
 } from "./systems/dungeon.js";
+
 import { handleBattleAction } from "./systems/battle.js";
 import { handleInventoryAction } from "./systems/inventory.js";
 import { handleSkillMenu } from "./systems/skills.js";
 
-
 // =======================================================================
-//                            Discord Client
+//                      Discord Client + 玩家資料
 // =======================================================================
 
 const client = new Client({
@@ -37,12 +37,10 @@ const client = new Client({
   ]
 });
 
-// 玩家資料
 export const players = new Map();
 
-
 // =======================================================================
-//                             Slash Commands
+//                         Slash Commands 註冊
 // =======================================================================
 
 const commands = [
@@ -67,7 +65,7 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 
 // =======================================================================
-//                             Bot Ready
+//                                Ready
 // =======================================================================
 
 client.once("ready", () => {
@@ -76,12 +74,30 @@ client.once("ready", () => {
 
 
 // =======================================================================
-//                           互動事件處理核心
+//                       🔥 安全互動回覆函式
+// =======================================================================
+
+async function safeReply(interaction, payload) {
+  try {
+    if (interaction.deferred || interaction.replied)
+      return interaction.editReply(payload);
+    return interaction.reply({ ...payload, ephemeral: true });
+  } catch {
+    return interaction.followUp({ ...payload, ephemeral: true });
+  }
+}
+
+
+// =======================================================================
+//                      Interaction 核心處理
 // =======================================================================
 
 client.on("interactionCreate", async (interaction) => {
 
-  // =============== Chat Command ===============
+  // ------------------------------------------
+  // Slash Commands
+  // ------------------------------------------
+
   if (interaction.isChatInputCommand()) {
 
     if (interaction.commandName === "start")
@@ -97,7 +113,9 @@ client.on("interactionCreate", async (interaction) => {
   }
 
 
-  // =============== Button Interaction ===============
+  // ------------------------------------------
+  // 其他互動：按鈕 Interaction
+  // ------------------------------------------
 
   if (!interaction.isButton()) return;
 
@@ -105,32 +123,37 @@ client.on("interactionCreate", async (interaction) => {
   const userId = interaction.user.id;
   const player = players.get(userId);
 
-  // ---- Start 系列（職業、難度）----
+  // --- 2.4：如果玩家不存在（重開 bot 或 map 重置）
+  if (!player && !id.startsWith("start_")) {
+    return safeReply(interaction, {
+      content: "⚠ 你還沒開始冒險，請輸入 **/start**。"
+    });
+  }
+
+  // ---------------- START 系列 -----------------
   if (id.startsWith("start_")) {
     return startGame(interaction, players, id);
   }
 
-  // ---- 地城入口 / 前進 / 觀察 / 使用道具 ----
+  // ---------------- Dungeon 系列 ----------------
   if (id === "dungeon_enter" || id.startsWith("dungeon_act_")) {
     return handleDungeonAction(interaction, players, id);
   }
 
-  // ---- 地城事件結果 ----
   if (id.startsWith("dungeon_event_")) {
     return handleEventResult(interaction, player, id);
   }
 
-  // ---- 下一層 ----
   if (id === "dungeon_next") {
     return goToNextFloor(interaction, player);
   }
 
-  // ---- 戰鬥 ----
+  // ---------------- 戰鬥系列 --------------------
   if (id.startsWith("battle_")) {
     return handleBattleAction(interaction, players, id);
   }
 
-  // ---- 背包 ----
+  // ---------------- 背包 ------------------------
   if (id.startsWith("inv_")) {
     return handleInventoryAction(interaction, players, id);
   }
@@ -139,7 +162,7 @@ client.on("interactionCreate", async (interaction) => {
 
 
 // =======================================================================
-//                             Login
+//                            Login
 // =======================================================================
 
 client.login(process.env.TOKEN);
